@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaizzen | Modern Indian History</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons for modern, sleek iconography -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 20px 40px -15px rgba(0, 0, 0, 0.05), 0 0 20px 0 rgba(0,0,0,0.02)',
+                        'premium-hover': '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 30px 0 rgba(0,0,0,0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #fafafa;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* 3D Flip Mechanics */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Smooth physics-based transition */
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease-in-out;
+        }
+        
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Elegant scrollbar for long explanations */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(90deg, #2e1065, #7c3aed);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans text-slate-800 selection:bg-brand-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/60">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-950 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-brand-950/20">
+                    K
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">Kaizzen</h1>
+                    <p class="text-[11px] uppercase tracking-widest text-slate-500 font-semibold">Modern Indian History</p>
+                </div>
+            </div>
+            
+            <button onclick="shuffleDeck()" class="group flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-full text-sm font-medium hover:border-brand-500 hover:text-brand-600 transition-all shadow-sm hover:shadow active:scale-95">
+                <i class="ph ph-shuffle text-lg group-hover:animate-spin-once"></i>
+                <span class="hidden sm:inline">Shuffle Cards</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 w-full max-w-5xl mx-auto">
+        
+        <!-- Progress Header -->
+        <div class="w-full max-w-3xl mb-8 flex flex-col gap-3">
+            <div class="flex justify-between items-end px-1">
+                <span class="text-sm font-medium text-slate-500" id="card-counter">0 / 0</span>
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <kbd class="px-2 py-1 bg-white border border-slate-200 rounded-md font-sans shadow-sm">Space</kbd>
+                    <span>to flip</span>
+                </div>
+            </div>
+            <div class="w-full bg-slate-200/50 h-1.5 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-brand-600 h-full rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Flashcard Container -->
+        <div class="w-full max-w-3xl aspect-[4/3] sm:aspect-[16/9] md:aspect-[2/1] perspective-1000 cursor-pointer group" id="flashcard-container">
+            <div id="card-inner" class="card-inner relative w-full h-full transform-style-3d rounded-[2rem]">
+                
+                <!-- Front of Card (Question) -->
+                <div class="absolute inset-0 w-full h-full backface-hidden rounded-[2rem] shadow-premium group-hover:shadow-premium-hover transition-shadow duration-300">
+                    <!-- Inner wrapper safely isolates content from 3D plane bugs -->
+                    <div class="w-full h-full bg-white rounded-[2rem] flex flex-col p-8 sm:p-12 no-select border border-slate-100/50">
+                        <div class="flex justify-between items-start w-full">
+                            <span class="text-brand-500 bg-brand-50 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase">Question</span>
+                            <i class="ph ph-arrows-left-right text-slate-300 text-xl"></i>
+                        </div>
+
+                        <div class="flex-grow flex items-center justify-center text-center">
+                            <h2 id="question-text" class="text-2xl sm:text-3xl md:text-4xl font-serif text-slate-800 leading-snug font-medium">
+                                <!-- Question injected via JS -->
+                            </h2>
+                        </div>
+                        
+                        <div class="text-center mt-auto opacity-50 group-hover:opacity-100 transition-opacity">
+                            <span class="text-slate-400 text-sm font-medium">Click to reveal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back of Card (Answer) -->
+                <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-[2rem] shadow-premium">
+                    <!-- Inner wrapper to safely handle overflow without breaking backface-visibility -->
+                    <div class="w-full h-full bg-brand-950 text-white rounded-[2rem] flex flex-col p-8 sm:p-12 no-select custom-scrollbar overflow-y-auto border border-brand-900/50 relative overflow-hidden">
+                        
+                        <!-- Decorative background blur -->
+                        <div class="absolute -top-24 -right-24 w-64 h-64 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <div class="relative z-10 flex-grow flex flex-col items-center justify-center text-center space-y-8 h-full">
+                            <div class="w-full">
+                                <span class="text-brand-300 text-xs font-bold tracking-widest uppercase mb-3 block">Answer</span>
+                                <h2 id="answer-text" class="text-3xl sm:text-4xl md:text-5xl font-serif font-semibold text-white leading-tight">
+                                    <!-- Answer injected via JS -->
+                                </h2>
+                            </div>
+                            
+                            <div class="w-full max-w-2xl bg-white/5 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-white/10">
+                                <h3 class="text-[10px] uppercase tracking-widest text-brand-200/70 mb-3 font-semibold text-left flex items-center gap-2">
+                                    <i class="ph-fill ph-info"></i> Historical Context
+                                </h3>
+                                <p id="explanation-text" class="text-sm sm:text-base text-slate-200 text-left leading-relaxed font-light">
+                                    <!-- Explanation injected via JS -->
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-center gap-6 mt-10 w-full max-w-3xl">
+            <button onclick="prevCard()" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-300 hover:text-slate-900 focus:outline-none transition-all active:scale-95 group">
+                <i class="ph ph-caret-left text-2xl group-hover:-translate-x-1 transition-transform"></i>
+            </button>
+            
+            <button onclick="toggleFlip()" class="px-8 py-4 bg-slate-900 text-white font-medium rounded-2xl shadow-lg shadow-slate-900/20 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/30 focus:outline-none transition-all active:scale-95 flex items-center gap-3">
+                <i class="ph ph-arrows-clockwise text-xl"></i>
+                <span>Flip Card</span>
+            </button>
+            
+            <button onclick="nextCard()" class="w-14 h-14 flex items-center justify-center bg-white border border-slate-200 text-slate-600 rounded-2xl shadow-sm hover:shadow-md hover:border-slate-300 hover:text-slate-900 focus:outline-none transition-all active:scale-95 group">
+                <i class="ph ph-caret-right text-2xl group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-slate-400 text-sm font-medium">
+        <p>&copy; 2026 Kaizzen. Elevating General Studies Preparation.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /* * ==========================================
+         * 100 UPSC/PCS HISTORICAL QUESTIONS
+         * ========================================== */
+        const originalQuestions = [
+            // REVOLT & BRITISH CONQUEST
+            { q: "Who was the founder of the Subsidiary Alliance system?", a: "Lord Wellesley", exp: "Introduced in 1798. The Indian ruler had to disband his own army, maintain British troops at his own cost, and accept a British Resident at his court. The Nizam of Hyderabad was the first to accept it." },
+            { q: "The 'Doctrine of Lapse' is associated with which Governor-General?", a: "Lord Dalhousie", exp: "This annexation policy stated that any princely state under the direct or indirect control of the East India Company would be annexed if the ruler died without a natural male heir. Satara (1848), Jhansi (1853), and Nagpur (1854) were annexed." },
+            { q: "Who was the leader of the Revolt of 1857 in Bihar (Jagdishpur)?", a: "Kunwar Singh", exp: "An 80-year-old Rajput chieftain of Jagdishpur who fiercely fought against the British and successfully defeated forces led by Captain Dunbar." },
+            { q: "Who was the British Prime Minister during the Revolt of 1857?", a: "Lord Palmerston", exp: "He served as Prime Minister during the major uprisings in India. Following the revolt, the British Crown took direct control of India via the Government of India Act 1858." },
+            { q: "Which Governor-General introduced the Permanent Settlement in Bengal in 1793?", a: "Lord Cornwallis", exp: "It fixed the land revenue in perpetuity. Zamindars were recognized as the absolute owners of the land as long as they paid the revenue to the East India Company." },
+            { q: "The Ryotwari Settlement was primarily introduced by whom?", a: "Thomas Munro and Alexander Read", exp: "Introduced primarily in the Madras and Bombay Presidencies. Under this system, revenue was directly settled with the ryot (cultivator), bypassing zamindars." },
+            { q: "Who devised the Mahalwari system of land revenue?", a: "Holt Mackenzie", exp: "Introduced in 1822 in the North-Western Provinces, parts of Central India, and Punjab. The revenue was settled with the village community (Mahal) as a whole." },
+            { q: "In which year was the Battle of Plassey fought?", a: "1757", exp: "Fought between Nawab Siraj-ud-Daulah of Bengal and the British East India Company forces led by Robert Clive. It marked the beginning of British political dominance in India." },
+            { q: "The Dual Government in Bengal was established by?", a: "Robert Clive", exp: "Established after the Treaty of Allahabad (1765). The Company acquired the Diwani (revenue) rights, while the Nawab held the Nizamat (administrative/judicial) rights without actual power." },
+            { q: "Who was the first Governor-General of India?", a: "Lord William Bentinck", exp: "Under the Charter Act of 1833, the Governor-General of Bengal was redesignated as the Governor-General of India. He is known for social reforms like abolishing Sati." },
+            
+            // SOCIO-RELIGIOUS REFORMS
+            { q: "Who founded the Brahmo Samaj in 1828?", a: "Raja Ram Mohan Roy", exp: "Founded in Calcutta to purge Hinduism of social evils like Sati and caste discrimination. It promoted monotheism based on the teachings of the Upanishads." },
+            { q: "Who established the Ramakrishna Mission in 1897?", a: "Swami Vivekananda", exp: "Headquartered at Belur Math. It was founded to propagate the philosophical teachings of his guru, Ramakrishna Paramahamsa, with a strong focus on social service." },
+            { q: "The Satyashodhak Samaj was founded by whom in 1873?", a: "Jyotirao Phule", exp: "Founded in Maharashtra to secure human rights, social justice, and education for the marginalized low castes and women. He also authored the influential book 'Gulamgiri'." },
+            { q: "Who was the founder of the Arya Samaj (1875)?", a: "Swami Dayanand Saraswati", exp: "Founded in Bombay with the motto 'Go back to the Vedas'. It rejected idolatry and the hereditary caste system, and initiated the Shuddhi movement." },
+            { q: "Who founded the Aligarh Movement?", a: "Sir Syed Ahmed Khan", exp: "Aimed to modernize the Muslim community through English education while retaining Islamic values. He established the Muhammadan Anglo-Oriental College in 1875." },
+            { q: "Who started the Young Bengal Movement?", a: "Henry Vivian Derozio", exp: "A radical intellectual movement in the late 1820s among the students of Hindu College, Calcutta, advocating free thought and rationalism." },
+            { q: "The Theosophical Society was founded in New York in 1875 by whom?", a: "Madame H.P. Blavatsky and Col. H.S. Olcott", exp: "Later headquartered in Adyar, Madras. It drew inspiration from Indian philosophy (Vedanta and Buddhism). Annie Besant popularized it in India." },
+            { q: "Who was the founder of the 'Servants of India Society' (1905)?", a: "Gopal Krishna Gokhale", exp: "Founded in Pune to build a dedicated cadre of national missionaries who would promote the social and economic interests of Indians through constitutional means." },
+            { q: "Who founded the Seva Sadan in Bombay (1885)?", a: "Behramji M. Malabari", exp: "A Parsi social reformer who campaigned vigorously against child marriage and for widow remarriage. His efforts led to the Age of Consent Act, 1891." },
+            { q: "Who is known as the 'Mother of Indian Revolution'?", a: "Madam Bhikaji Cama", exp: "She co-founded the Paris Indian Society and famously unfurled the first version of the Indian national flag at the International Socialist Conference in Stuttgart, Germany in 1907." },
+
+            // PRESS & EDUCATION
+            { q: "Which Act is known as the 'Gagging Act'?", a: "Vernacular Press Act, 1878", exp: "Enacted by Lord Lytton to heavily restrict the freedom of the Indian-language (vernacular) press. It was later repealed by Lord Ripon in 1882." },
+            { q: "Who is considered the 'Liberator of the Indian Press'?", a: "Charles Metcalfe", exp: "As acting Governor-General (1835-1836), he repealed the licensing regulations of 1823, ushering in a period of relative freedom for the press." },
+            { q: "Which document is called the 'Magna Carta of English Education in India'?", a: "Wood's Despatch (1854)", exp: "Sent by Sir Charles Wood to Lord Dalhousie. It systematized the education hierarchy from primary vernacular schools to English universities (established in Bombay, Madras, and Calcutta in 1857)." },
+            { q: "The Hunter Education Commission of 1882 was appointed by?", a: "Lord Ripon", exp: "It primarily reviewed the progress of education since Wood's Despatch, specifically emphasizing primary and secondary education." },
+            { q: "Which Viceroy appointed the Raleigh Commission (1902)?", a: "Lord Curzon", exp: "The commission's recommendations led to the Indian Universities Act of 1904, which brought universities under stricter government control to curb nationalist sentiments." },
+            { q: "Who proposed the 'Wardha Scheme of Basic Education' in 1937?", a: "Mahatma Gandhi", exp: "Also known as Nai Talim. Based on the Zakir Hussain Committee report, it focused on learning through productive manual work (vocational training) in the mother tongue." },
+            { q: "Who published the newspaper 'Mirat-ul-Akbar'?", a: "Raja Ram Mohan Roy", exp: "It was the first Persian journal in India, published in 1822. He also published 'Sambad Kaumudi' in Bengali." },
+            { q: "The newspapers 'Kesari' and 'Mahratta' were started by?", a: "Bal Gangadhar Tilak", exp: "Kesari was in Marathi and Mahratta in English. Tilak used them aggressively to propagate anti-British nationalism." },
+            { q: "Who was the author of the book 'Poverty and Un-British Rule in India'?", a: "Dadabhai Naoroji", exp: "Published in 1901, it detailed his famous 'Drain of Wealth' theory, statistically proving how British economic policies impoverished India." },
+            { q: "Who started the English weekly 'New India' and the daily 'Commonweal'?", a: "Annie Besant", exp: "She used these publications to propagate the ideals of the Home Rule movement, demanding self-government for India." },
+
+            // INDIAN NATIONAL CONGRESS (INC)
+            { q: "Where was the first session of the Indian National Congress held in 1885?", a: "Bombay", exp: "Initially planned for Poona but shifted due to a cholera outbreak. It was attended by 72 delegates and presided over by Womesh Chandra Bonnerjee." },
+            { q: "Who was the founder of the Indian National Congress?", a: "A.O. Hume", exp: "A retired British civil servant. The 'Safety Valve' theory suggests Hume created the INC to provide a peaceful outlet for growing Indian discontent." },
+            { q: "Who was the first Muslim President of the INC?", a: "Badruddin Tyabji", exp: "He presided over the third session of the INC held in Madras in 1887." },
+            { q: "Who was the first English President of the INC?", a: "George Yule", exp: "He presided over the fourth session held in Allahabad in 1888." },
+            { q: "In which INC session did the 'Surat Split' occur?", a: "Surat Session, 1907", exp: "The Congress divided into Moderates (led by Gokhale) and Extremists (led by Tilak). The split was over the methods of the Swadeshi movement and the choice of the president." },
+            { q: "Who was the first woman President of the INC?", a: "Annie Besant", exp: "She presided over the 1917 Calcutta session. Sarojini Naidu later became the first *Indian* woman president in 1925 (Kanpur)." },
+            { q: "At which INC session was the resolution for 'Purna Swaraj' (Complete Independence) passed?", a: "Lahore Session, 1929", exp: "Presided by Jawaharlal Nehru. The INC declared Jan 26, 1930, as Independence Day. The tricolor flag was hoisted on the banks of the Ravi river." },
+            { q: "Who presided over the Karachi Session of INC in 1931?", a: "Sardar Vallabhbhai Patel", exp: "Famous for endorsing the Gandhi-Irwin Pact and adopting resolutions on Fundamental Rights and the National Economic Programme." },
+            { q: "Which INC session was the only one presided over by Mahatma Gandhi?", a: "Belgaum Session, 1924", exp: "Gandhi presided only once. This session saw the reintegration of the Swarajists (who wanted to contest elections) back into the Congress fold." },
+            { q: "Who was the President of the INC at the time of India's independence in 1947?", a: "J.B. Kripalani", exp: "He presided over the Meerut session in 1946 and remained president during the crucial transfer of power in August 1947." },
+
+            // NATIONAL MOVEMENT (PRE-GANDHIAN)
+            { q: "The Partition of Bengal (1905) was announced by which Viceroy?", a: "Lord Curzon", exp: "While the stated reason was administrative efficiency, the real motive was to divide the politically aware Bengali population along religious lines. It triggered the Swadeshi Movement." },
+            { q: "When was the Partition of Bengal annulled?", a: "1911", exp: "Announced by King George V during the Delhi Durbar, during the viceroyalty of Lord Hardinge. Concurrently, the capital was shifted from Calcutta to Delhi." },
+            { q: "Who founded the All India Muslim League in 1906?", a: "Nawab Salimullah and Aga Khan", exp: "Founded in Dhaka. Its initial objectives were to promote loyalty to the British government and protect the political rights of Muslims in India." },
+            { q: "What was the Komagata Maru incident (1914)?", a: "A Japanese ship carrying Indian immigrants was turned away from Canada.", exp: "Most passengers were Sikhs and Muslims from Punjab. Forced to return to Calcutta, British police fired upon them at Budge Budge, fueling revolutionary anger (like the Ghadar movement)." },
+            { q: "Who were the primary leaders of the Ghadar Party (1913)?", a: "Lala Hardayal and Sohan Singh Bhakna", exp: "Headquartered in San Francisco, USA. It was a revolutionary organization of expatriate Indians aiming to secure India's independence through armed rebellion." },
+            { q: "The Home Rule League movement (1916) was spearheaded by whom?", a: "Bal Gangadhar Tilak and Annie Besant", exp: "Tilak operated in Maharashtra and Central Provinces, while Besant covered the rest of India. They demanded self-government within the British Empire." },
+            { q: "What was the Lucknow Pact (1916)?", a: "An agreement between the INC and the Muslim League.", exp: "Brokered largely by Tilak and Jinnah. The INC surprisingly accepted the Muslim League's demand for separate electorates in exchange for a joint demand for self-rule." },
+            { q: "Who founded the Indian Association in 1876?", a: "Surendranath Banerjee and Ananda Mohan Bose", exp: "One of the most important pre-Congress nationalist organizations, based in Calcutta. It opposed the reduction of the age limit for the ICS exam." },
+            { q: "Who founded the East India Association in London in 1866?", a: "Dadabhai Naoroji", exp: "Created to discuss Indian questions and influence British public men to promote Indian welfare. It had branches in Bombay, Madras, and Calcutta." },
+            { q: "Who led the Santhal Rebellion (Hul) in 1855-56?", a: "Sidhu and Kanhu Murmu", exp: "A massive tribal uprising against the oppressive British colonial authority, corrupt moneylenders (dikus), and the zamindari system in present-day Jharkhand." },
+
+            // GANDHIAN ERA (1917 - 1947)
+            { q: "Which was Mahatma Gandhi's first Satyagraha in India?", a: "Champaran Satyagraha (1917)", exp: "In Bihar. He intervened to protect indigo farmers suffering under the 'Tinkathia' system forced by European planters. (First Civil Disobedience)." },
+            { q: "In which movement did Gandhi use a hunger strike for the first time?", a: "Ahmedabad Mill Strike (1918)", exp: "A dispute between mill owners and workers over the 'Plague Bonus'. Gandhi's fast unto death secured a 35% wage hike for the workers." },
+            { q: "What was the focus of the Kheda Satyagraha (1918)?", a: "Peasant demand for revenue remission due to crop failure.", exp: "Led by Gandhi and Sardar Patel in Gujarat. It was Gandhi's first real 'Non-Cooperation' movement in India." },
+            { q: "Which Act was popularly known as the 'Black Act'?", a: "The Rowlatt Act (1919)", exp: "Officially the Anarchical and Revolutionary Crimes Act. It allowed the British to arrest any person without trial and hold them for up to two years." },
+            { q: "Who was the Viceroy during the Jallianwala Bagh Massacre (1919)?", a: "Lord Chelmsford", exp: "General Dyer ordered firing on a peaceful crowd gathered in Amritsar on Baisakhi day. Rabindranath Tagore renounced his knighthood in protest." },
+            { q: "Who were the leaders of the Khilafat Movement?", a: "The Ali Brothers (Shaukat Ali and Muhammad Ali)", exp: "Launched in 1919 to protest against the unjust treatment of the Ottoman Caliph (Khalifa) by the British after WWI. Gandhi aligned the Non-Cooperation Movement with it." },
+            { q: "Why was the Non-Cooperation Movement suspended in 1922?", a: "The Chauri Chaura Incident", exp: "In Gorakhpur, UP, an angry mob set a police station on fire, burning 22 policemen alive. Gandhi, insisting on absolute non-violence, abruptly halted the movement." },
+            { q: "Who founded the Swaraj Party in 1923?", a: "C.R. Das and Motilal Nehru", exp: "Also known as the Congress-Khilafat Swarajya Party. They advocated entering the legislative councils to obstruct British functioning from within, rather than boycotting them." },
+            { q: "Why was the Simon Commission (1927) boycotted by Indians?", a: "It contained no Indian members.", exp: "An all-white commission sent to review the 1919 Act. Protests erupted nationwide ('Simon Go Back'). Lala Lajpat Rai succumbed to injuries sustained during a police lathi-charge against it." },
+            { q: "Who led the Bardoli Satyagraha in 1928?", a: "Sardar Vallabhbhai Patel", exp: "A successful no-tax campaign by farmers in Gujarat against an arbitrary 22% increase in land revenue. Women of Bardoli bestowed the title 'Sardar' upon him." },
+            { q: "What marked the beginning of the Civil Disobedience Movement in 1930?", a: "The Dandi March (Salt Satyagraha)", exp: "Gandhi, with 78 followers, marched from Sabarmati Ashram to Dandi coast to illegally manufacture salt, defying the British salt monopoly." },
+            { q: "Who represented the INC at the Second Round Table Conference (1931)?", a: "Mahatma Gandhi", exp: "Gandhi attended as the sole representative of the INC following the Gandhi-Irwin pact. The conference failed over the issue of separate electorates for minorities." },
+            { q: "What was the Communal Award (1932)?", a: "British policy granting separate electorates to minorities, including the Depressed Classes.", exp: "Announced by British PM Ramsay MacDonald. Gandhi saw it as an attempt to divide Hindus and went on a fast unto death in Yerwada Jail." },
+            { q: "What was the Poona Pact of 1932?", a: "An agreement between Gandhi and B.R. Ambedkar.", exp: "Ambedkar abandoned the demand for separate electorates for the Depressed Classes. In return, the number of seats reserved for them in the general electorate was significantly increased." },
+            { q: "Who started the Individual Satyagraha in 1940, and who was the first Satyagrahi?", a: "Started by Gandhi; Vinoba Bhave was the first.", exp: "Jawaharlal Nehru was the second. It was a limited, non-violent protest against dragging India into WWII without consent, aiming to express moral opposition rather than mass disruption." },
+            { q: "Who gave the slogan 'Do or Die' and during which movement?", a: "Mahatma Gandhi during the Quit India Movement (1942)", exp: "Launched on August 8, 1942, at Gowalia Tank Maidan, Bombay. Major leaders were arrested the next day, turning it into a leaderless, often violent mass uprising." },
+            { q: "Who formed the Forward Bloc in 1939?", a: "Subhas Chandra Bose", exp: "Formed as a left-wing faction within the INC after Bose resigned from the presidency due to severe ideological differences with Gandhi and the right wing." },
+            { q: "What was the primary objective of the Cripps Mission (1942)?", a: "To secure full Indian cooperation for the British war effort.", exp: "Sir Stafford Cripps offered Dominion Status after WWII, but the INC rejected it. Gandhi called it 'a post-dated cheque on a crashing bank'." },
+            { q: "What was the CR Formula (1944)?", a: "A proposal by C. Rajagopalachari to solve the political deadlock between INC and Muslim League.", exp: "It proposed a plebiscite in Muslim-majority areas after independence to decide on partition. Jinnah rejected it as he wanted outright partition." },
+            { q: "What did the Cabinet Mission (1946) propose?", a: "A weak center, grouped provinces, and rejection of a separate Pakistan.", exp: "Composed of Pethick-Lawrence, Stafford Cripps, and A.V. Alexander. It laid the framework for the Constituent Assembly." },
+            
+            // ACTS & LEGISLATION
+            { q: "Which Act created the office of the Governor-General of Bengal?", a: "Regulating Act of 1773", exp: "Warren Hastings became the first G.G. of Bengal. It also established the Supreme Court at Calcutta." },
+            { q: "Which Act introduced a system of 'Double Government' (Board of Control and Court of Directors)?", a: "Pitt's India Act, 1784", exp: "It distinguished between the commercial (Court of Directors) and political (Board of Control) functions of the East India Company." },
+            { q: "Which Act finally ended the trade monopoly of the EIC in India (except for tea and trade with China)?", a: "Charter Act of 1813", exp: "It also allowed Christian missionaries into India and allocated Rs. 1 lakh per year for Indian education." },
+            { q: "Which Act completely ended the commercial activities of the EIC, making it a purely administrative body?", a: "Charter Act of 1833", exp: "It centralized administration, making the Governor-General of Bengal the Governor-General of India (Bentinck)." },
+            { q: "Which Act transferred power from the EIC to the British Crown?", a: "Government of India Act, 1858", exp: "Enacted after the 1857 Revolt. It created the office of the Secretary of State for India and changed the title of Governor-General to Viceroy (Lord Canning was the first)." },
+            { q: "Which Act introduced the portfolio system in the Indian executive?", a: "Indian Councils Act, 1861", exp: "Introduced by Lord Canning, it marked the beginning of cabinet government in India. It also initiated the process of decentralization." },
+            { q: "Which Act is famously known as the Morley-Minto Reforms?", a: "Indian Councils Act, 1909", exp: "It infamously introduced 'Separate Electorates' for Muslims, sowing the seeds of communalism in Indian politics." },
+            { q: "Which Act introduced 'Dyarchy' at the provincial level?", a: "Government of India Act, 1919 (Montagu-Chelmsford Reforms)", exp: "Provincial subjects were divided into 'Reserved' (controlled by Governor/bureaucrats) and 'Transferred' (controlled by Indian ministers responsible to the legislature)." },
+            { q: "Which Act abolished Dyarchy in provinces and introduced 'Provincial Autonomy'?", a: "Government of India Act, 1935", exp: "It proposed an All-India Federation (which never materialized) and provided for the establishment of a Federal Court and the Reserve Bank of India." },
+            { q: "Which plan finalized the partition of India?", a: "Mountbatten Plan (June 3 Plan, 1947)", exp: "Accepted by both INC and Muslim League, it laid the blueprint for the transfer of power and creation of two independent dominions on August 15, 1947." },
+
+            // REVOLUTIONARY EXTREMISM & MISCELLANEOUS
+            { q: "Who established the Abhinav Bharat Society (1904)?", a: "V.D. Savarkar and Ganesh Savarkar", exp: "A secret revolutionary society founded in Nashik, Maharashtra. It believed in armed rebellion to overthrow British rule." },
+            { q: "Who was involved in the Alipore Bomb Case (1908)?", a: "Aurobindo Ghosh and Barindra Kumar Ghosh", exp: "Following an assassination attempt on a British judge by Khudiram Bose and Prafulla Chaki, the Anushilan Samiti members were arrested. Aurobindo later retired to an ashram in Pondicherry." },
+            { q: "Who founded the Hindustan Republican Association (HRA) in 1924?", a: "Ram Prasad Bismil, Sachindra Nath Sanyal, Jogesh Chandra Chatterjee", exp: "Founded in Kanpur. They carried out the famous Kakori Train Robbery in 1925." },
+            { q: "What was the HSRA (Hindustan Socialist Republican Association)?", a: "The reorganized form of HRA, led by Chandrashekhar Azad and Bhagat Singh (1928).", exp: "Renamed in Delhi at Feroz Shah Kotla. It added 'Socialist' to its name, reflecting Marxist influences." },
+            { q: "Why did Bhagat Singh and Batukeshwar Dutt throw a bomb in the Central Legislative Assembly in 1929?", a: "To protest against the Public Safety Bill and Trade Dispute Act.", exp: "Their intention was 'to make the deaf hear', not to kill. They willingly surrendered to use the courts as a platform for their propaganda." },
+            { q: "Who led the Chittagong Armoury Raid in 1930?", a: "Surya Sen (Masterda)", exp: "A daring raid on police and auxiliary forces armouries in Bengal by the Indian Republican Army. It featured high participation of women revolutionaries like Pritilata Waddedar." },
+            { q: "Who assassinated the infamous General Dyer? (Correction: Sir Michael O'Dwyer)", a: "Udham Singh", exp: "Udham Singh assassinated Sir Michael O'Dwyer (the Lt. Governor of Punjab during the Jallianwala Bagh massacre, not the firing commander Col. Reginald Dyer) in London in 1940." },
+            { q: "Who was known as the 'Frontier Gandhi'?", a: "Khan Abdul Ghaffar Khan", exp: "A devout Pashtun follower of Gandhi. He founded the non-violent Khudai Khidmatgar ('Servants of God' or 'Red Shirts') movement in the NWFP." },
+            { q: "Where were the historic INA (Indian National Army) Trials held in 1945?", a: "The Red Fort, Delhi", exp: "Three INA officers—Prem Kumar Sahgal, Shah Nawaz Khan, and Gurbaksh Singh Dhillon—were defended by prominent lawyers like Bhulabhai Desai, Tej Bahadur Sapru, and Jawaharlal Nehru." },
+            { q: "Which incident in 1946 is considered the final nail in the coffin of British rule?", a: "Royal Indian Navy (RIN) Mutiny", exp: "Starting on HMIS Talwar in Bombay over poor food and racial discrimination, it spread rapidly. It demonstrated that the British could no longer rely on Indian armed forces." }
+        ];
+
+        // State variables
+        let questions = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let isAnimating = false;
+
+        // DOM Elements
+        const cardInner = document.getElementById('card-inner');
+        const questionText = document.getElementById('question-text');
+        const answerText = document.getElementById('answer-text');
+        const explanationText = document.getElementById('explanation-text');
+        const cardCounter = document.getElementById('card-counter');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialization
+        function init() {
+            questions = [...originalQuestions];
+            renderCard();
+            
+            // Event Listeners - Hardened click handler
+            const container = document.getElementById('flashcard-container');
+            container.addEventListener('click', (e) => {
+                // Prevent flip if user is selecting text to copy/read
+                if (window.getSelection().toString().length > 0) return;
+                
+                // Prevent flip if user is clicking on the scrollbar area of the back card
+                const rect = container.getBoundingClientRect();
+                const isClickNearRightEdge = (e.clientX - rect.left) > (rect.width - 20);
+                if (isFlipped && isClickNearRightEdge) return;
+                
+                toggleFlip();
+            });
+            
+            document.addEventListener('keydown', handleKeyPress);
+        }
+
+        // Render Data to DOM
+        function renderCard() {
+            const q = questions[currentIndex];
+            questionText.textContent = q.q;
+            answerText.textContent = q.a;
+            explanationText.textContent = q.exp;
+            
+            cardCounter.textContent = `${currentIndex + 1} / ${questions.length}`;
+            const percentage = ((currentIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        // Flip Logic with throttle
+        function toggleFlip() {
+            if(isAnimating) return;
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('rotate-y-180');
+            } else {
+                cardInner.classList.remove('rotate-y-180');
+            }
+        }
+
+        // Navigation Logic
+        function changeCard(direction) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const updateIndex = () => {
+                if (direction === 'next') {
+                    currentIndex = (currentIndex < questions.length - 1) ? currentIndex + 1 : 0;
+                } else {
+                    currentIndex = (currentIndex > 0) ? currentIndex - 1 : questions.length - 1;
+                }
+            };
+
+            if (isFlipped) {
+                // Unflip first, wait for transition, then change data
+                isFlipped = false;
+                cardInner.classList.remove('rotate-y-180');
+                setTimeout(() => {
+                    updateIndex();
+                    renderCard();
+                    isAnimating = false;
+                }, 350); // Wait for CSS transition halfway
+            } else {
+                // Fast transition for front-to-front navigation
+                cardInner.style.opacity = '0';
+                cardInner.style.transform = direction === 'next' ? 'translateX(-30px)' : 'translateX(30px)';
+                
+                setTimeout(() => {
+                    updateIndex();
+                    renderCard();
+                    cardInner.style.opacity = '1';
+                    cardInner.style.transform = 'translateX(0)';
+                    
+                    setTimeout(() => {
+                        isAnimating = false;
+                    }, 200); // Wait for fade in
+                }, 200); // Wait for fade out
+            }
+        }
+
+        function nextCard() { changeCard('next'); }
+        function prevCard() { changeCard('prev'); }
+
+        // Fisher-Yates Shuffle
+        function shuffleDeck() {
+            if (isAnimating) return;
+            isAnimating = true; // Lock during shuffle
+            
+            // Force reset to front before shuffling
+            if (isFlipped) {
+                isFlipped = false;
+                cardInner.classList.remove('rotate-y-180');
+                setTimeout(performShuffle, 400);
+            } else {
+                performShuffle();
+            }
+
+            function performShuffle() {
+                cardInner.style.opacity = '0';
+                setTimeout(() => {
+                    for (let i = questions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [questions[i], questions[j]] = [questions[j], questions[i]];
+                    }
+                    currentIndex = 0;
+                    renderCard();
+                    cardInner.style.opacity = '1';
+                    setTimeout(() => {
+                        isAnimating = false; // Release lock
+                    }, 200);
+                }, 200);
+            }
+        }
+
+        // Keyboard Controls
+        function handleKeyPress(e) {
+            if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+            switch(e.code) {
+                case 'Space': 
+                    e.preventDefault(); 
+                    toggleFlip(); 
+                    break;
+                case 'ArrowRight': 
+                    nextCard(); 
+                    break;
+                case 'ArrowLeft': 
+                    prevCard(); 
+                    break;
+            }
+        }
+
+        // Boot
+        window.onload = init;
+    </script>
+</body>
+</html>
