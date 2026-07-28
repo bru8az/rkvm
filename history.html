@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Quest: Modern India</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .pulse-glow {
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(234, 179, 8, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.5); }
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Canvas for confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="bg-amber-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                <i class="fa-solid fa-monument"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">History Quest</h1>
+                <p class="text-xs text-slate-400 font-medium">UPSC / WBCS Prep - Modern India</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-inner">
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <span id="global-score" class="font-bold text-lg">0</span>
+                <span class="text-xs text-slate-400 hidden sm:inline">XP</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10 w-full max-w-5xl">
+        
+        <!-- Dashboard / Menu View -->
+        <div id="menu-view" class="fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Master Modern Indian History</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Engage with interactive mini-games designed to reinforce chronology, identify key figures, and connect critical policies to their makers. Perfect for quick revisions.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Game 1 Card -->
+                <button onclick="startGame('chronology')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                    <div class="bg-blue-500/20 text-blue-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-timeline"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Chronology Builder</h3>
+                    <p class="text-sm text-slate-400 mb-4">Click historical events in their correct sequential order. Tests your timeline accuracy.</p>
+                    <div class="flex items-center text-amber-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 2 Card -->
+                <button onclick="startGame('whoami')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                    <div class="bg-purple-500/20 text-purple-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-user-secret"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Who Am I?</h3>
+                    <p class="text-sm text-slate-400 mb-4">Guess the historical personality based on progressive clues. Fewer clues = more XP!</p>
+                    <div class="flex items-center text-amber-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 3 Card -->
+                <button onclick="startGame('match')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                    <div class="bg-emerald-500/20 text-emerald-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-link"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Match the Maker</h3>
+                    <p class="text-sm text-slate-400 mb-4">Connect major policies, acts, or events to the correct Viceroy or Governor-General.</p>
+                    <div class="flex items-center text-amber-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Container (Hidden by default) -->
+        <div id="game-view" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Menu
+                </button>
+                <div id="game-title" class="text-xl font-bold text-amber-400">Game Title</div>
+                <div id="game-score-tracker" class="bg-slate-800 px-3 py-1 rounded-md text-sm font-semibold border border-slate-700">Score: 0</div>
+            </div>
+            
+            <!-- Dynamic Game Canvas where JS will inject UI -->
+            <div id="game-canvas" class="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Modal for Alerts/Feedback -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-slate-900/80 backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="text-center">
+                <div id="modal-icon" class="text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-slate-700">
+                    <!-- Icon injected here -->
+                </div>
+                <h3 id="modal-title" class="text-2xl font-bold mb-2 text-white">Title</h3>
+                <p id="modal-message" class="text-slate-300 mb-6">Message goes here.</p>
+                <button onclick="closeModal()" id="modal-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURES ---
+
+        const timelineData = [
+            { id: 1, text: "Revolt of 1857", year: 1857 },
+            { id: 2, text: "Formation of Indian National Congress", year: 1885 },
+            { id: 3, text: "Partition of Bengal", year: 1905 },
+            { id: 4, text: "Formation of Muslim League", year: 1906 },
+            { id: 5, text: "Morley-Minto Reforms", year: 1909 },
+            { id: 6, text: "Lucknow Pact", year: 1916 },
+            { id: 7, text: "Jallianwala Bagh Massacre", year: 1919 },
+            { id: 8, text: "Non-Cooperation Movement", year: 1920 },
+            { id: 9, text: "Chauri Chaura Incident", year: 1922 },
+            { id: 10, text: "Simon Commission", year: 1928 },
+            { id: 11, text: "Dandi March (Civil Disobedience)", year: 1930 },
+            { id: 12, text: "Gandhi-Irwin Pact", year: 1931 },
+            { id: 13, text: "Poona Pact", year: 1932 },
+            { id: 14, text: "Government of India Act", year: 1935 },
+            { id: 15, text: "Quit India Movement", year: 1942 },
+            { id: 16, text: "Cabinet Mission", year: 1946 },
+            { id: 17, text: "Indian Independence Act", year: 1947 }
+        ];
+
+        const personalitiesData = [
+            {
+                name: "Mahatma Gandhi",
+                clues: ["Returned to India from South Africa in 1915.", "Started the Champaran Satyagraha in 1917.", "Edited the journals 'Harijan' and 'Young India'."],
+                options: ["Jawaharlal Nehru", "Mahatma Gandhi", "Sardar Patel", "B.R. Ambedkar"]
+            },
+            {
+                name: "Bhagat Singh",
+                clues: ["Founded the Naujawan Bharat Sabha in 1926.", "Threw a bomb in the Central Legislative Assembly in 1929.", "Martyred on March 23, 1931."],
+                options: ["Chandrashekhar Azad", "Subhas Chandra Bose", "Bhagat Singh", "Sukhdev"]
+            },
+            {
+                name: "Subhas Chandra Bose",
+                clues: ["Passed the Indian Civil Service exam but resigned in 1921.", "Elected President of INC at Haripura (1938) and Tripuri (1939).", "Founded the Forward Bloc and reorganized the INA."],
+                options: ["Subhas Chandra Bose", "Lala Lajpat Rai", "Bal Gangadhar Tilak", "Bipin Chandra Pal"]
+            },
+            {
+                name: "Raja Ram Mohan Roy",
+                clues: ["Published 'Mirat-ul-Akbar' and 'Sambad Kaumudi'.", "Established the Brahmo Samaj in 1828.", "Played a key role in the abolition of the Sati system in 1829."],
+                options: ["Swami Vivekananda", "Raja Ram Mohan Roy", "Ishwar Chandra Vidyasagar", "Dayananda Saraswati"]
+            },
+            {
+                name: "B. R. Ambedkar",
+                clues: ["Founded the Bahishkrit Hitakarini Sabha.", "Signed the Poona Pact in 1932.", "Chairman of the Drafting Committee of the Constituent Assembly."],
+                options: ["B. R. Ambedkar", "Jotiba Phule", "Periyar E. V. Ramasamy", "K. Kamaraj"]
+            },
+            {
+                name: "Bal Gangadhar Tilak",
+                clues: ["Organized the Shivaji and Ganeshotsav festivals to build national spirit.", "Authored 'Gita Rahasya' while imprisoned in Mandalay.", "Famously declared: 'Swaraj is my birthright and I shall have it'."],
+                options: ["Gopal Krishna Gokhale", "Bal Gangadhar Tilak", "Aurobindo Ghosh", "Lala Lajpat Rai"]
+            }
+        ];
+
+        const matchData = [
+            { left: "Abolition of Sati (1829)", right: "Lord William Bentinck", matchId: 1 },
+            { left: "Doctrine of Lapse", right: "Lord Dalhousie", matchId: 2 },
+            { left: "Vernacular Press Act (1878)", right: "Lord Lytton", matchId: 3 },
+            { left: "Repeal of Vernacular Press Act", right: "Lord Ripon", matchId: 4 },
+            { left: "Partition of Bengal (1905)", right: "Lord Curzon", matchId: 5 },
+            { left: "Separate Electorates (1909)", right: "Lord Minto", matchId: 6 },
+            { left: "Rowlatt Act (1919)", right: "Lord Chelmsford", matchId: 7 },
+            { left: "August Offer (1940)", right: "Lord Linlithgow", matchId: 8 },
+            { left: "Partition of India (1947)", right: "Lord Mountbatten", matchId: 9 }
+        ];
+
+        // --- GLOBAL STATE ---
+        let globalScore = 0;
+        let currentGameScore = 0;
+        let currentActiveGame = null;
+
+        // --- UTILITY FUNCTIONS ---
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function showModal(title, message, type, onContinue = null) {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const iconEl = document.getElementById('modal-icon');
+            const btnEl = document.getElementById('modal-btn');
+
+            titleEl.textContent = title;
+            messageEl.innerHTML = message;
+
+            if (type === 'success') {
+                iconEl.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-emerald-500/20';
+                btnEl.className = 'w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else if (type === 'error') {
+                iconEl.innerHTML = '<i class="fa-solid fa-xmark text-red-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20';
+                btnEl.className = 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else {
+                iconEl.innerHTML = '<i class="fa-solid fa-info text-amber-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-amber-500/20';
+                btnEl.className = 'w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl transition-colors';
+            }
+
+            modal.classList.remove('hidden');
+            // Trigger animation
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            // Store callback
+            modal.dataset.onContinue = onContinue ? onContinue.toString() : '';
+            window.modalCallback = onContinue;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (window.modalCallback) {
+                    window.modalCallback();
+                    window.modalCallback = null;
+                }
+            }, 300);
+        }
+
+        function updateGlobalScore(points) {
+            globalScore += points;
+            const scoreEl = document.getElementById('global-score');
+            scoreEl.textContent = globalScore;
+            
+            // Animate score change
+            scoreEl.classList.add('text-emerald-400', 'scale-125');
+            setTimeout(() => {
+                scoreEl.classList.remove('text-emerald-400', 'scale-125');
+            }, 300);
+        }
+
+        function updateGameScore(points) {
+            currentGameScore += points;
+            document.getElementById('game-score-tracker').textContent = `Score: ${currentGameScore}`;
+        }
+
+        function switchView(viewId) {
+            document.getElementById('menu-view').classList.add('hidden');
+            document.getElementById('game-view').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function returnToMenu() {
+            switchView('menu-view');
+            currentActiveGame = null;
+            document.getElementById('game-canvas').innerHTML = '';
+        }
+
+        function startGame(gameType) {
+            currentActiveGame = gameType;
+            currentGameScore = 0;
+            updateGameScore(0);
+            switchView('game-view');
+            
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = ''; // Clear previous
+            
+            if (gameType === 'chronology') {
+                document.getElementById('game-title').textContent = "Chronology Builder";
+                initChronologyGame();
+            } else if (gameType === 'whoami') {
+                document.getElementById('game-title').textContent = "Who Am I?";
+                initWhoAmIGame();
+            } else if (gameType === 'match') {
+                document.getElementById('game-title').textContent = "Match the Maker";
+                initMatchGame();
+            }
+        }
+
+        // --- GAME 1: CHRONOLOGY BUILDER ---
+        let chronTargetSequence = [];
+        let chronCurrentIndex = 0;
+        let chronSelectedItems = [];
+        let chronAvailableItems = [];
+
+        function initChronologyGame() {
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = `
+                <div class="w-full max-w-3xl flex flex-col h-full fade-in">
+                    <p class="text-center text-slate-400 mb-6">Select the events in their correct chronological order (earliest to latest).</p>
+                    
+                    <!-- Selected Timeline Area -->
+                    <div class="mb-8 p-4 bg-slate-800/50 rounded-xl min-h-[120px] border-2 border-dashed border-slate-600 flex flex-col gap-2" id="chron-timeline">
+                        <div class="text-slate-500 text-center italic mt-4" id="chron-placeholder">Your timeline will appear here...</div>
+                    </div>
+
+                    <!-- Available Choices -->
+                    <div class="flex flex-wrap gap-3 justify-center" id="chron-choices">
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden" id="chron-next-btn-container">
+                        <button onclick="initChronologyGame()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-6 rounded-full transition-colors pulse-glow">
+                            Next Round <i class="fa-solid fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Pick 5 random consecutive-ish events for better difficulty, or just 5 random
+            // Let's pick a random starting point and take 5 to ensure they aren't all from the same year
+            const shuffledFull = shuffleArray([...timelineData]);
+            const selectedSet = shuffledFull.slice(0, 5);
+            
+            // Sort them to know the target answer
+            chronTargetSequence = [...selectedSet].sort((a, b) => a.year - b.year);
+            chronAvailableItems = [...selectedSet]; // keep shuffled state
+            chronCurrentIndex = 0;
+            chronSelectedItems = [];
+
+            renderChronChoices();
+        }
+
+        function renderChronChoices() {
+            const choicesContainer = document.getElementById('chron-choices');
+            choicesContainer.innerHTML = '';
+            
+            chronAvailableItems.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-3 rounded-lg border border-slate-600 transition-all text-sm md:text-base font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1';
+                btn.textContent = item.text;
+                btn.onclick = () => handleChronSelection(item, btn);
+                choicesContainer.appendChild(btn);
+            });
+        }
+
+        function handleChronSelection(item, btnElement) {
+            const expectedItem = chronTargetSequence[chronCurrentIndex];
+            
+            if (item.id === expectedItem.id) {
+                // Correct!
+                chronCurrentIndex++;
+                updateGameScore(20);
+                updateGlobalScore(20);
+                
+                // Move from available to timeline
+                chronAvailableItems = chronAvailableItems.filter(i => i.id !== item.id);
+                
+                const timelineContainer = document.getElementById('chron-timeline');
+                const placeholder = document.getElementById('chron-placeholder');
+                if (placeholder) placeholder.remove();
+
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-100 px-4 py-2 rounded flex justify-between items-center fade-in';
+                timelineItem.innerHTML = `<span><i class="fa-solid fa-check-circle mr-2 text-emerald-400"></i> ${item.text}</span> <span class="font-bold text-emerald-400">${item.year}</span>`;
+                timelineContainer.appendChild(timelineItem);
+
+                renderChronChoices();
+
+                if (chronCurrentIndex === chronTargetSequence.length) {
+                    // Win round
+                    triggerConfetti();
+                    document.getElementById('chron-next-btn-container').classList.remove('hidden');
+                    updateGlobalScore(50); // Bonus for completing
+                    showModal("Round Complete!", "Perfect chronology! You earned a +50 XP bonus.", "success");
+                }
+            } else {
+                // Wrong
+                btnElement.classList.add('shake', 'bg-red-500/50', 'border-red-500');
+                setTimeout(() => {
+                    btnElement.classList.remove('shake', 'bg-red-500/50', 'border-red-500');
+                }, 500);
+                
+                updateGameScore(-5); // Penalty
+                showModal("Incorrect Sequence", `That's not the earliest event remaining. Think carefully!`, "error");
+            }
+        }
+
+        // --- GAME 2: WHO AM I? ---
+        let currentPersonality = null;
+        let cluesRevealed = 1;
+        let whoAmIPointsPossible = 50;
+
+        function initWhoAmIGame() {
+            const canvas = document.getElementById('game-canvas');
+            
+            // Pick random personality
+            currentPersonality = personalitiesData[Math.floor(Math.random() * personalitiesData.length)];
+            cluesRevealed = 1;
+            whoAmIPointsPossible = 50;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-slate-400">Identify the Personality</span>
+                        <span class="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full text-sm font-bold border border-amber-500/30" id="whoami-points-badge">Potential XP: ${whoAmIPointsPossible}</span>
+                    </div>
+                    
+                    <div class="bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700 shadow-inner min-h-[180px] flex flex-col justify-center gap-4" id="clues-container">
+                        <!-- Clues go here -->
+                    </div>
+
+                    <button id="reveal-clue-btn" onclick="revealNextClue()" class="mb-8 text-slate-400 hover:text-white underline text-sm transition-colors self-center">
+                        Need another clue? (Reduces XP)
+                    </button>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="whoami-options">
+                        <!-- Options go here -->
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden" id="whoami-next-btn-container">
+                        <button onclick="initWhoAmIGame()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-6 rounded-full transition-colors pulse-glow">
+                            Next Personality <i class="fa-solid fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            renderClues();
+            renderOptions();
+        }
+
+        function renderClues() {
+            const container = document.getElementById('clues-container');
+            container.innerHTML = '';
+            for (let i = 0; i < cluesRevealed; i++) {
+                const clueEl = document.createElement('div');
+                clueEl.className = 'flex items-start gap-3 fade-in';
+                clueEl.innerHTML = `
+                    <div class="mt-1 bg-blue-500/20 text-blue-400 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs border border-blue-500/30">${i+1}</div>
+                    <p class="text-lg text-slate-200 leading-relaxed">${currentPersonality.clues[i]}</p>
+                `;
+                container.appendChild(clueEl);
+            }
+
+            const revealBtn = document.getElementById('reveal-clue-btn');
+            if (cluesRevealed >= currentPersonality.clues.length) {
+                revealBtn.classList.add('hidden');
+            }
+        }
+
+        function revealNextClue() {
+            if (cluesRevealed < currentPersonality.clues.length) {
+                cluesRevealed++;
+                whoAmIPointsPossible -= 15; // Penalty for extra clues
+                document.getElementById('whoami-points-badge').textContent = `Potential XP: ${whoAmIPointsPossible}`;
+                renderClues();
+            }
+        }
+
+        function renderOptions() {
+            const optionsContainer = document.getElementById('whoami-options');
+            optionsContainer.innerHTML = '';
+            
+            // Get options and shuffle
+            const shuffledOptions = shuffleArray([...currentPersonality.options]);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-700 hover:bg-slate-600 text-white font-medium py-4 px-6 rounded-xl border border-slate-600 transition-all shadow-md hover:shadow-lg text-center';
+                btn.textContent = opt;
+                btn.onclick = () => handleWhoAmIAnswer(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleWhoAmIAnswer(selectedName, btnElement) {
+            const buttons = document.getElementById('whoami-options').querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true); // Disable all
+
+            if (selectedName === currentPersonality.name) {
+                btnElement.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'border-slate-600');
+                btnElement.classList.add('bg-emerald-500', 'border-emerald-600', 'text-white');
+                
+                updateGameScore(whoAmIPointsPossible);
+                updateGlobalScore(whoAmIPointsPossible);
+                triggerConfetti();
+                
+                // Show all clues if not already shown
+                cluesRevealed = currentPersonality.clues.length;
+                renderClues();
+                document.getElementById('reveal-clue-btn').classList.add('hidden');
+
+                document.getElementById('whoami-next-btn-container').classList.remove('hidden');
+                
+            } else {
+                btnElement.classList.add('shake', 'bg-red-500', 'border-red-600');
+                
+                // Highlight correct answer
+                buttons.forEach(b => {
+                    if (b.textContent === currentPersonality.name) {
+                        b.classList.remove('bg-slate-700');
+                        b.classList.add('bg-emerald-500/50', 'border-emerald-500');
+                    }
+                });
+
+                showModal("Incorrect", `The correct answer was <b>${currentPersonality.name}</b>. Keep practicing!`, "error", () => {
+                    document.getElementById('whoami-next-btn-container').classList.remove('hidden');
+                });
+            }
+        }
+
+        // --- GAME 3: MATCH THE MAKER ---
+        let currentMatchSet = [];
+        let matchLeftSelected = null;
+        let matchRightSelected = null;
+        let matchesFound = 0;
+
+        function initMatchGame() {
+            const canvas = document.getElementById('game-canvas');
+            matchesFound = 0;
+            matchLeftSelected = null;
+            matchRightSelected = null;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-4xl flex flex-col h-full fade-in">
+                    <p class="text-center text-slate-400 mb-6">Select an event/policy on the left, then select the matching Viceroy on the right.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 md:gap-12 relative" id="match-container">
+                        <!-- Left Column (Events) -->
+                        <div class="flex flex-col gap-3" id="match-left-col"></div>
+                        
+                        <!-- Middle connector visual (desktop only) -->
+                        <div class="hidden md:flex absolute inset-y-0 left-1/2 transform -translate-x-1/2 flex-col justify-center">
+                            <div class="h-full w-px bg-slate-700"></div>
+                        </div>
+
+                        <!-- Right Column (Viceroys) -->
+                        <div class="flex flex-col gap-3" id="match-right-col"></div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden" id="match-next-btn-container">
+                        <button onclick="initMatchGame()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-6 rounded-full transition-colors pulse-glow">
+                            Play Again <i class="fa-solid fa-rotate-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Select 5 random pairs
+            const shuffledFull = shuffleArray([...matchData]);
+            currentMatchSet = shuffledFull.slice(0, 5);
+
+            // Separate and shuffle left and right arrays independently
+            const leftItems = shuffleArray(currentMatchSet.map(item => ({ text: item.left, id: item.matchId, side: 'left' })));
+            const rightItems = shuffleArray(currentMatchSet.map(item => ({ text: item.right, id: item.matchId, side: 'right' })));
+
+            renderMatchList('match-left-col', leftItems);
+            renderMatchList('match-right-col', rightItems);
+        }
+
+        function renderMatchList(containerId, items) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            items.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-3 md:px-6 md:py-4 rounded-xl border-2 border-slate-700 transition-all text-sm md:text-base font-medium shadow-sm';
+                btn.textContent = item.text;
+                btn.dataset.id = item.id;
+                btn.dataset.side = item.side;
+                btn.onclick = () => handleMatchSelection(item, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleMatchSelection(item, btnElement) {
+            // Prevent clicking already matched items
+            if (btnElement.classList.contains('matched')) return;
+
+            // Handle selection logic based on side
+            if (item.side === 'left') {
+                if (matchLeftSelected) matchLeftSelected.element.classList.remove('border-amber-400', 'bg-amber-500/10');
+                matchLeftSelected = { data: item, element: btnElement };
+                btnElement.classList.add('border-amber-400', 'bg-amber-500/10');
+            } else {
+                if (matchRightSelected) matchRightSelected.element.classList.remove('border-amber-400', 'bg-amber-500/10');
+                matchRightSelected = { data: item, element: btnElement };
+                btnElement.classList.add('border-amber-400', 'bg-amber-500/10');
+            }
+
+            // Check for match if both are selected
+            if (matchLeftSelected && matchRightSelected) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const left = matchLeftSelected;
+            const right = matchRightSelected;
+            
+            if (left.data.id === right.data.id) {
+                // Correct Match
+                left.element.classList.remove('border-amber-400', 'bg-amber-500/10');
+                right.element.classList.remove('border-amber-400', 'bg-amber-500/10');
+                
+                left.element.classList.add('matched', 'bg-emerald-500/20', 'border-emerald-500', 'text-emerald-100', 'opacity-50', 'cursor-default');
+                right.element.classList.add('matched', 'bg-emerald-500/20', 'border-emerald-500', 'text-emerald-100', 'opacity-50', 'cursor-default');
+                
+                // Add an icon indicating match
+                left.element.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-2"></i> ${left.data.text}`;
+                right.element.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-2"></i> ${right.data.text}`;
+
+                updateGameScore(20);
+                updateGlobalScore(20);
+                matchesFound++;
+
+                if (matchesFound === 5) {
+                    triggerConfetti();
+                    updateGlobalScore(50); // completion bonus
+                    document.getElementById('match-next-btn-container').classList.remove('hidden');
+                    showModal("Brilliant!", "You've successfully matched all the events to their makers. +50 Bonus XP!", "success");
+                }
+            } else {
+                // Incorrect Match
+                left.element.classList.remove('border-amber-400', 'bg-amber-500/10');
+                right.element.classList.remove('border-amber-400', 'bg-amber-500/10');
+                
+                left.element.classList.add('shake', 'bg-red-500/20', 'border-red-500');
+                right.element.classList.add('shake', 'bg-red-500/20', 'border-red-500');
+                
+                setTimeout(() => {
+                    left.element.classList.remove('shake', 'bg-red-500/20', 'border-red-500');
+                    right.element.classList.remove('shake', 'bg-red-500/20', 'border-red-500');
+                }, 500);
+
+                updateGameScore(-5);
+            }
+
+            // Reset selection
+            matchLeftSelected = null;
+            matchRightSelected = null;
+        }
+
+
+        // --- VISUAL EFFECTS (CONFETTI) ---
+        let particles = [];
+        const colors = ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#ffffff'];
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Create particles
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100, // burst from slightly below center
+                    r: Math.random() * 6 + 2,
+                    dx: Math.random() * 20 - 10,
+                    dy: Math.random() * -20 - 5, // shoot upwards
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            requestAnimationFrame(animateConfetti);
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach((p, index) => {
+                p.tiltAngle += p.tiltAngleInc;
+                p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle) * 2;
+                p.dy += 0.5; // gravity
+                p.x += p.dx;
+                p.y += p.dy;
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+
+                // Remove particle if off screen
+                if (p.y > canvas.height) {
+                    particles.splice(index, 1);
+                }
+            });
+        }
+
+        // Handle window resize for canvas
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('confetti-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Initialize state on load
+        window.onload = () => {
+            // Start in menu view
+            switchView('menu-view');
+        };
+
+    </script>
+</body>
+</html>
