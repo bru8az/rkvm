@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polity Quest: India</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .pulse-glow {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); /* Violet glow for Polity */
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Canvas for confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Game specific styles */
+        .draggable-item {
+            cursor: grab;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            transition: all 0.2s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+    <canvas id="confetti-canvas"></canvas>
+
+    <header class="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="bg-violet-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-500">Polity Quest</h1>
+                <p class="text-xs text-slate-400 font-medium">UPSC / WBCS Prep - Indian Constitution</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-inner">
+                <i class="fa-solid fa-star text-violet-400"></i>
+                <span id="global-score" class="font-bold text-lg">0</span>
+                <span class="text-xs text-slate-400 hidden sm:inline">XP</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10 w-full max-w-5xl">
+        
+        <!-- Dashboard / Menu View -->
+        <div id="menu-view" class="fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Master Indian Polity</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Engage with interactive mini-games designed to reinforce constitutional articles, landmark amendments, and core principles. Perfect for quick revisions.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Game 1 Card -->
+                <button onclick="startGame('articleAssembler')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-violet-500/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+                    <div class="bg-blue-500/20 text-blue-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Article Assembler</h3>
+                    <p class="text-sm text-slate-400 mb-4">Match crucial Constitutional Articles to their corresponding provisions. Tests your foundational knowledge.</p>
+                    <div class="flex items-center text-violet-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 2 Card -->
+                <button onclick="startGame('amendmentsArcade')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-violet-500/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+                    <div class="bg-fuchsia-500/20 text-fuchsia-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-fuchsia-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-gavel"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Amendments Arcade</h3>
+                    <p class="text-sm text-slate-400 mb-4">Identify the landmark Constitutional Amendments based on their key changes and historical impact.</p>
+                    <div class="flex items-center text-violet-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 3 Card -->
+                <button onclick="startGame('conceptCheck')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-violet-500/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+                    <div class="bg-indigo-500/20 text-indigo-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-landmark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Concept Check</h3>
+                    <p class="text-sm text-slate-400 mb-4">Rapid-fire True/False questions covering constitutional sources, parliamentary procedures, and fundamental rights.</p>
+                    <div class="flex items-center text-violet-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Container (Hidden by default) -->
+        <div id="game-view" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Menu
+                </button>
+                <div id="game-title" class="text-xl font-bold text-violet-400">Game Title</div>
+                <div id="game-score-tracker" class="bg-slate-800 px-3 py-1 rounded-md text-sm font-semibold border border-slate-700">Score: 0</div>
+            </div>
+            
+            <!-- Dynamic Game Canvas where JS will inject UI -->
+            <div id="game-canvas" class="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Modal for Alerts/Feedback -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-slate-900/80 backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="text-center">
+                <div id="modal-icon" class="text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-slate-700">
+                    <!-- Icon injected here -->
+                </div>
+                <h3 id="modal-title" class="text-2xl font-bold mb-2 text-white">Title</h3>
+                <p id="modal-message" class="text-slate-300 mb-6">Message goes here.</p>
+                <button onclick="closeModal()" id="modal-btn" class="w-full bg-violet-500 hover:bg-violet-600 text-white font-bold py-3 rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURES ---
+
+        const articlesData = [
+            { article: "Article 14", provision: "Equality before law" },
+            { article: "Article 17", provision: "Abolition of Untouchability" },
+            { article: "Article 21", provision: "Protection of life and personal liberty" },
+            { article: "Article 32", provision: "Remedies for enforcement of Fundamental Rights" },
+            { article: "Article 40", provision: "Organization of village panchayats" },
+            { article: "Article 44", provision: "Uniform civil code for the citizens" },
+            { article: "Article 51A", provision: "Fundamental Duties" },
+            { article: "Article 72", provision: "Pardoning power of President" },
+            { article: "Article 110", provision: "Definition of 'Money Bills'" },
+            { article: "Article 280", provision: "Finance Commission" },
+            { article: "Article 324", provision: "Election Commission" },
+            { article: "Article 352", provision: "National Emergency" }
+        ];
+
+        const amendmentsData = [
+            { amendment: "42nd Amendment (1976)", clue: "Added 'Socialist', 'Secular', and 'Integrity' to the Preamble. Known as the 'Mini-Constitution'.", impact: "Fundamental Duties added; changed Preamble." },
+            { amendment: "44th Amendment (1978)", clue: "Removed the Right to Property from the list of Fundamental Rights.", impact: "Right to Property became a legal right (Article 300A)." },
+            { amendment: "52nd Amendment (1985)", clue: "Added the Tenth Schedule to the Constitution.", impact: "Anti-Defection Law introduced." },
+            { amendment: "61st Amendment (1989)", clue: "Reduced the voting age from 21 years to 18 years for the Lok Sabha and assembly elections.", impact: "Lowered voting age." },
+            { amendment: "73rd Amendment (1992)", clue: "Granted constitutional status to Panchayati Raj institutions.", impact: "Added Part IX and 11th Schedule." },
+            { amendment: "86th Amendment (2002)", clue: "Made elementary education a Fundamental Right.", impact: "Added Article 21A (Right to Education)." },
+            { amendment: "101st Amendment (2016)", clue: "Introduced a national value-added tax on manufacture, sale, and consumption of goods and services.", impact: "Introduction of GST." }
+        ];
+
+        const polityFactsData = [
+            { statement: "The concept of 'Concurrent List' in the Indian Constitution was borrowed from the Constitution of Australia.", isTrue: true, explanation: "Yes, the Concurrent List, freedom of trade, commerce and inter-course, and joint sitting of the two Houses of Parliament are borrowed from Australia." },
+            { statement: "A Money Bill can be introduced in either the Lok Sabha or the Rajya Sabha.", isTrue: false, explanation: "A Money Bill can only be introduced in the Lok Sabha, and that too on the recommendation of the President." },
+            { statement: "The President of India can declare a National Emergency under Article 352 solely on the advice of the Prime Minister.", isTrue: false, explanation: "After the 44th Amendment (1978), the President can proclaim a National Emergency only after receiving a written recommendation from the Cabinet." },
+            { statement: "The Directive Principles of State Policy (DPSP) are non-justiciable in nature.", isTrue: true, explanation: "DPSPs (Part IV) are not enforceable by courts for their violation, unlike Fundamental Rights." },
+            { statement: "The Supreme Court of India consists of a maximum of 31 judges, including the Chief Justice.", isTrue: false, explanation: "Currently, the sanctioned strength of the Supreme Court is 34 judges (1 Chief Justice + 33 other judges)." },
+            { statement: "The oath of office to the President is administered by the Chief Justice of India.", isTrue: true, explanation: "If the CJI is absent, the senior-most judge of the Supreme Court available administers the oath." },
+            { statement: "Panchayati Raj was first established in the state of Andhra Pradesh.", isTrue: false, explanation: "It was first established in Rajasthan (Nagaur district) on October 2, 1959, followed by Andhra Pradesh." },
+            { statement: "The 'Right to Constitutional Remedies' is described by Dr. B.R. Ambedkar as the 'heart and soul' of the Constitution.", isTrue: true, explanation: "He was referring to Article 32, which allows citizens to approach the Supreme Court directly for the enforcement of Fundamental Rights." }
+        ];
+
+        // --- GLOBAL STATE ---
+        let globalScore = 0;
+        let currentGameScore = 0;
+        let currentActiveGame = null;
+
+        // --- UTILITY FUNCTIONS ---
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function showModal(title, message, type, onContinue = null) {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const iconEl = document.getElementById('modal-icon');
+            const btnEl = document.getElementById('modal-btn');
+
+            titleEl.textContent = title;
+            messageEl.innerHTML = message;
+
+            if (type === 'success') {
+                iconEl.innerHTML = '<i class="fa-solid fa-check text-green-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-green-500/20';
+                btnEl.className = 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else if (type === 'error') {
+                iconEl.innerHTML = '<i class="fa-solid fa-xmark text-red-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20';
+                btnEl.className = 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else {
+                iconEl.innerHTML = '<i class="fa-solid fa-info text-violet-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-violet-500/20';
+                btnEl.className = 'w-full bg-violet-500 hover:bg-violet-600 text-white font-bold py-3 rounded-xl transition-colors';
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            window.modalCallback = onContinue;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (window.modalCallback) {
+                    window.modalCallback();
+                    window.modalCallback = null;
+                }
+            }, 300);
+        }
+
+        function updateGlobalScore(points) {
+            globalScore += points;
+            const scoreEl = document.getElementById('global-score');
+            scoreEl.textContent = globalScore;
+            
+            scoreEl.classList.add('text-violet-400', 'scale-125');
+            setTimeout(() => {
+                scoreEl.classList.remove('text-violet-400', 'scale-125');
+            }, 300);
+        }
+
+        function updateGameScore(points) {
+            currentGameScore += points;
+            document.getElementById('game-score-tracker').textContent = `Score: ${currentGameScore}`;
+        }
+
+        function switchView(viewId) {
+            document.getElementById('menu-view').classList.add('hidden');
+            document.getElementById('game-view').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function returnToMenu() {
+            switchView('menu-view');
+            currentActiveGame = null;
+            document.getElementById('game-canvas').innerHTML = '';
+        }
+
+        function startGame(gameType) {
+            currentActiveGame = gameType;
+            currentGameScore = 0;
+            updateGameScore(0);
+            switchView('game-view');
+            
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = ''; 
+            
+            if (gameType === 'articleAssembler') {
+                document.getElementById('game-title').textContent = "Article Assembler";
+                initArticleGame();
+            } else if (gameType === 'amendmentsArcade') {
+                document.getElementById('game-title').textContent = "Amendments Arcade";
+                initAmendmentsGame();
+            } else if (gameType === 'conceptCheck') {
+                document.getElementById('game-title').textContent = "Concept Check";
+                initConceptGame();
+            }
+        }
+
+        // --- GAME 1: ARTICLE ASSEMBLER ---
+        let currentArticles = [];
+        let articlesMatched = 0;
+
+        function initArticleGame() {
+            const canvas = document.getElementById('game-canvas');
+            articlesMatched = 0;
+
+            const shuffledFull = shuffleArray([...articlesData]);
+            currentArticles = shuffledFull.slice(0, 4); // 4 pairs per round
+
+            const provisions = shuffleArray([...currentArticles]);
+
+            let articlesHTML = currentArticles.map(a => 
+                `<div draggable="true" ondragstart="drag(event)" id="drag-${a.article.replace(/\s+/g, '')}" data-article="${a.article}" class="draggable-item bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 text-blue-100 font-bold py-3 px-4 rounded-lg shadow-md mb-3 text-center transition-colors">
+                    ${a.article}
+                </div>`
+            ).join('');
+
+            let provisionsHTML = provisions.map((p, index) => 
+                `<div class="flex items-center gap-4 mb-4">
+                    <div id="drop-${index}" ondrop="drop(event)" ondragover="allowDrop(event)" data-match="${p.article}" class="drop-zone w-32 h-14 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center bg-slate-800/50 text-slate-500 text-sm font-medium">
+                        Drop Here
+                    </div>
+                    <div class="flex-1 bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-200 shadow-inner">
+                        ${p.provision}
+                    </div>
+                </div>`
+            ).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-4xl flex flex-col h-full fade-in">
+                    <p class="text-center text-slate-400 mb-6">Drag the Article to its correct provision.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Draggable Articles (Bank) -->
+                        <div class="w-full md:w-1/4" id="article-bank">
+                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Articles</h4>
+                            ${articlesHTML}
+                        </div>
+                        
+                        <!-- Drop Zones (Provisions) -->
+                        <div class="w-full md:w-3/4">
+                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Provisions</h4>
+                            ${provisionsHTML}
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="article-next-btn-container">
+                        <button onclick="initArticleGame()" class="bg-violet-500 hover:bg-violet-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow">
+                            Next Round <i class="fa-solid fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("article", ev.target.dataset.article);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const targetDropZone = ev.currentTarget;
+            targetDropZone.classList.remove('drag-over');
+
+            // If it already has a child, don't allow drop (simplification)
+            if (targetDropZone.children.length > 0 && !targetDropZone.textContent.includes('Drop Here')) {
+                return;
+            }
+
+            const dataId = ev.dataTransfer.getData("text");
+            const draggedArticle = ev.dataTransfer.getData("article");
+            const requiredArticle = targetDropZone.dataset.match;
+            const draggedElement = document.getElementById(dataId);
+
+            if (draggedArticle === requiredArticle) {
+                // Correct match
+                targetDropZone.innerHTML = '';
+                
+                // Style the dropped item
+                draggedElement.className = "w-full h-full flex items-center justify-center bg-green-500/20 border-2 border-green-500 text-green-100 font-bold rounded-lg shadow-md cursor-default";
+                draggedElement.draggable = false;
+                
+                targetDropZone.appendChild(draggedElement);
+                targetDropZone.classList.remove('border-dashed', 'border-slate-600');
+                targetDropZone.classList.add('border-none');
+
+                updateGameScore(20);
+                updateGlobalScore(20);
+                articlesMatched++;
+
+                if (articlesMatched === 4) {
+                    triggerConfetti();
+                    updateGlobalScore(50); // bonus
+                    document.getElementById('article-next-btn-container').classList.remove('hidden');
+                    showModal("Perfect Assembly!", "You matched all articles correctly. +50 Bonus XP", "success");
+                }
+            } else {
+                // Incorrect match
+                targetDropZone.classList.add('shake', 'bg-red-500/20', 'border-red-500');
+                updateGameScore(-5);
+                setTimeout(() => {
+                    targetDropZone.classList.remove('shake', 'bg-red-500/20', 'border-red-500');
+                }, 500);
+            }
+        }
+
+        // Add event listeners to remove drag-over class when leaving
+        document.addEventListener('dragleave', function(event) {
+            if (event.target.classList && event.target.classList.contains('drop-zone')) {
+                event.target.classList.remove('drag-over');
+            }
+        });
+
+
+        // --- GAME 2: AMENDMENTS ARCADE ---
+        let currentAmendmentSet = [];
+        let currentAmndIndex = 0;
+
+        function initAmendmentsGame() {
+            const canvas = document.getElementById('game-canvas');
+            currentAmendmentSet = shuffleArray([...amendmentsData]).slice(0, 5);
+            currentAmndIndex = 0;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
+                    <div class="flex justify-between items-center w-full mb-4 text-sm text-slate-400 font-medium">
+                        <span>Case File <span id="amnd-current-num">1</span>/5</span>
+                        <span>Identify the Amendment</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-2xl p-6 md:p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[180px] flex flex-col items-center justify-center text-center relative" id="amnd-card">
+                        <div class="text-fuchsia-400 text-3xl mb-4"><i class="fa-solid fa-scroll"></i></div>
+                        <p class="text-lg md:text-xl text-slate-100 font-semibold" id="amnd-clue">Loading clue...</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full" id="amnd-options">
+                        <!-- Options injected here -->
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="amnd-next-btn-container">
+                        <button onclick="initAmendmentsGame()" class="bg-violet-500 hover:bg-violet-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md">
+                            Play Next Set
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            displayCurrentAmendment();
+        }
+
+        function displayCurrentAmendment() {
+            if (currentAmndIndex >= currentAmendmentSet.length) {
+                // Round Complete
+                document.getElementById('amnd-card').innerHTML = `<div class="text-green-400 text-5xl mb-4"><i class="fa-solid fa-trophy"></i></div><p class="text-2xl text-white font-bold">Round Complete!</p>`;
+                document.getElementById('amnd-options').innerHTML = '';
+                document.getElementById('amnd-next-btn-container').classList.remove('hidden');
+                triggerConfetti();
+                updateGlobalScore(40);
+                return;
+            }
+
+            const currentData = currentAmendmentSet[currentAmndIndex];
+            document.getElementById('amnd-clue').textContent = currentData.clue;
+            document.getElementById('amnd-current-num').textContent = currentAmndIndex + 1;
+
+            // Generate options (1 correct, 3 distractors)
+            let distractors = amendmentsData.filter(a => a.amendment !== currentData.amendment);
+            distractors = shuffleArray(distractors).slice(0, 3);
+            
+            let options = [currentData, ...distractors];
+            options = shuffleArray(options);
+
+            const optionsContainer = document.getElementById('amnd-options');
+            optionsContainer.innerHTML = '';
+            
+            // Re-animate card
+            const card = document.getElementById('amnd-card');
+            card.classList.remove('fade-in');
+            void card.offsetWidth;
+            card.classList.add('fade-in');
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-fuchsia-500 font-semibold py-4 px-6 rounded-xl transition-all shadow-sm text-left flex items-center justify-between group';
+                btn.innerHTML = `<span>${opt.amendment}</span> <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-fuchsia-400 transition-colors"></i>`;
+                btn.onclick = () => handleAmndAnswer(opt.amendment, currentData.amendment, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAmndAnswer(selected, correct, btnElement) {
+            // Disable all buttons immediately
+            const buttons = document.getElementById('amnd-options').querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            const currentData = currentAmendmentSet[currentAmndIndex];
+
+            if (selected === correct) {
+                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
+                btnElement.classList.add('border-green-500', 'bg-green-500/20', 'text-green-100');
+                updateGameScore(20);
+                updateGlobalScore(20);
+                
+                setTimeout(() => {
+                    showModal("Correct!", `Impact: ${currentData.impact}`, "success", () => {
+                        currentAmndIndex++;
+                        displayCurrentAmendment();
+                    });
+                }, 400);
+
+            } else {
+                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
+                btnElement.classList.add('border-red-500', 'bg-red-500/20', 'text-red-100', 'shake');
+                
+                // Highlight correct answer
+                buttons.forEach(b => {
+                    if(b.textContent.trim().includes(correct)) {
+                         b.classList.remove('border-slate-600');
+                         b.classList.add('border-green-500', 'text-green-400');
+                    }
+                });
+
+                updateGameScore(-5);
+                
+                setTimeout(() => {
+                    showModal("Incorrect", `The correct answer was ${correct}.<br><br>Impact: ${currentData.impact}`, "error", () => {
+                        currentAmndIndex++;
+                        displayCurrentAmendment();
+                    });
+                }, 800);
+            }
+        }
+
+
+        // --- GAME 3: CONCEPT CHECK ---
+        let currentFactSet = [];
+        let currentFactIndex = 0;
+
+        function initConceptGame() {
+            const canvas = document.getElementById('game-canvas');
+            
+            currentFactSet = shuffleArray([...polityFactsData]).slice(0, 5);
+            currentFactIndex = 0;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
+                    <div class="flex justify-between items-center w-full mb-6 text-sm text-slate-400 font-medium">
+                        <span>Concept <span id="fact-current-num">1</span> of 5</span>
+                        <span>True or False</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-2xl p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[160px] flex items-center justify-center text-center relative overflow-hidden" id="fact-card">
+                        <div class="absolute top-0 left-0 p-4 text-indigo-500/10">
+                            <i class="fa-solid fa-scale-unbalanced text-8xl"></i>
+                        </div>
+                        <p class="text-xl md:text-2xl text-slate-100 font-semibold relative z-10 leading-relaxed" id="fact-statement">Loading...</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 w-full max-w-md" id="fact-controls">
+                        <button onclick="handleFactAnswer(true)" class="bg-indigo-500/10 hover:bg-indigo-500/30 text-indigo-300 hover:text-white border border-indigo-500/30 hover:border-indigo-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-check text-2xl"></i> TRUE
+                        </button>
+                        <button onclick="handleFactAnswer(false)" class="bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-xmark text-2xl"></i> FALSE
+                        </button>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="fact-next-btn-container">
+                        <button onclick="initConceptGame()" class="bg-violet-500 hover:bg-violet-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md text-lg">
+                            Play Another Round
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            displayCurrentFact();
+        }
+
+        function displayCurrentFact() {
+            if (currentFactIndex < currentFactSet.length) {
+                const fact = currentFactSet[currentFactIndex];
+                const statementEl = document.getElementById('fact-statement');
+                const cardEl = document.getElementById('fact-card');
+                
+                cardEl.classList.remove('fade-in');
+                void cardEl.offsetWidth; 
+                cardEl.classList.add('fade-in');
+                
+                statementEl.textContent = fact.statement;
+                document.getElementById('fact-current-num').textContent = currentFactIndex + 1;
+            } else {
+                // Round Complete
+                document.getElementById('fact-card').innerHTML = `<p class="text-2xl text-violet-400 font-bold">Concepts Mastered!</p>`;
+                document.getElementById('fact-controls').classList.add('hidden');
+                document.getElementById('fact-next-btn-container').classList.remove('hidden');
+                triggerConfetti();
+                updateGlobalScore(30);
+            }
+        }
+
+        function handleFactAnswer(userAnswer) {
+            const fact = currentFactSet[currentFactIndex];
+            
+            if (userAnswer === fact.isTrue) {
+                // Correct
+                updateGameScore(20);
+                updateGlobalScore(20);
+                showModal("Spot On!", fact.explanation, "success", () => {
+                    currentFactIndex++;
+                    displayCurrentFact();
+                });
+            } else {
+                // Incorrect
+                updateGameScore(-10);
+                showModal("Needs Review", fact.explanation, "error", () => {
+                    currentFactIndex++;
+                    displayCurrentFact();
+                });
+            }
+        }
+
+        // --- VISUAL EFFECTS (CONFETTI) ---
+        let particles = [];
+        const colors = ['#8b5cf6', '#a855f7', '#d946ef', '#6366f1', '#e2e8f0', '#f8fafc'];
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    r: Math.random() * 6 + 2,
+                    dx: Math.random() * 20 - 10,
+                    dy: Math.random() * -20 - 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let activeParticles = 0;
+            
+            particles.forEach((p, index) => {
+                if (p.y <= canvas.height) {
+                    activeParticles++;
+                    p.tiltAngle += p.tiltAngleInc;
+                    p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle) * 2;
+                    p.dy += 0.5; // gravity
+                    p.x += p.dx;
+                    p.y += p.dy;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                    ctx.stroke();
+                }
+            });
+            
+            particles = particles.filter(p => p.y <= canvas.height);
+
+            if (activeParticles > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('confetti-canvas');
+            if(canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+        // Initialize state on load
+        window.onload = () => {
+            switchView('menu-view');
+        };
+
+    </script>
+</body>
+</html>
