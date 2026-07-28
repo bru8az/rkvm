@@ -127,36 +127,34 @@
             <div id="card-inner" class="card-inner relative w-full h-full transform-style-3d rounded-[2rem]">
                 
                 <!-- Front of Card (Question) -->
-                <div class="absolute inset-0 w-full h-full backface-hidden rounded-[2rem] shadow-premium group-hover:shadow-premium-hover transition-shadow duration-300">
-                    <!-- Inner wrapper safely isolates content from 3D plane bugs -->
-                    <div class="w-full h-full bg-white rounded-[2rem] flex flex-col p-8 sm:p-12 no-select border border-slate-100/50">
-                        <div class="flex justify-between items-start w-full">
-                            <span class="text-brand-500 bg-brand-50 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase">Question</span>
-                            <i class="ph ph-arrows-left-right text-slate-300 text-xl"></i>
-                        </div>
+                <div class="absolute inset-0 w-full h-full backface-hidden bg-white rounded-[2rem] shadow-premium group-hover:shadow-premium-hover flex flex-col p-8 sm:p-12 no-select transition-shadow duration-300 border border-slate-100/50">
+                    
+                    <div class="flex justify-between items-start w-full">
+                        <span class="text-brand-500 bg-brand-50 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase">Question</span>
+                        <i class="ph ph-arrows-left-right text-slate-300 text-xl"></i>
+                    </div>
 
-                        <div class="flex-grow flex items-center justify-center text-center">
-                            <h2 id="question-text" class="text-2xl sm:text-3xl md:text-4xl font-serif text-slate-800 leading-snug font-medium">
-                                <!-- Question injected via JS -->
-                            </h2>
-                        </div>
-                        
-                        <div class="text-center mt-auto opacity-50 group-hover:opacity-100 transition-opacity">
-                            <span class="text-slate-400 text-sm font-medium">Click to reveal</span>
-                        </div>
+                    <div class="flex-grow flex items-center justify-center text-center">
+                        <h2 id="question-text" class="text-2xl sm:text-3xl md:text-4xl font-serif text-slate-800 leading-snug font-medium">
+                            <!-- Question injected via JS -->
+                        </h2>
+                    </div>
+
+                    <div class="text-center mt-auto opacity-50 group-hover:opacity-100 transition-opacity">
+                        <span class="text-slate-400 text-sm font-medium">Click to reveal</span>
                     </div>
                 </div>
 
                 <!-- Back of Card (Answer) -->
-                <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-[2rem] shadow-premium">
-                    <!-- Inner wrapper to safely handle overflow without breaking backface-visibility -->
-                    <div class="w-full h-full bg-brand-950 text-white rounded-[2rem] flex flex-col p-8 sm:p-12 no-select custom-scrollbar overflow-y-auto border border-brand-900/50 relative overflow-hidden">
+                <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-brand-950 text-white rounded-[2rem] shadow-premium no-select border border-brand-900/50">
+                    <!-- Added an inner wrapper to isolate the overflow property from the 3D face -->
+                    <div class="absolute inset-0 w-full h-full p-8 sm:p-12 overflow-y-auto custom-scrollbar rounded-[2rem] flex flex-col relative overflow-hidden">
                         
                         <!-- Decorative background blur -->
                         <div class="absolute -top-24 -right-24 w-64 h-64 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
                         <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                        <div class="relative z-10 flex-grow flex flex-col items-center justify-center text-center space-y-8 h-full">
+                        <div class="relative z-10 flex-grow flex flex-col items-center justify-center text-center space-y-8 h-full min-h-full">
                             <div class="w-full">
                                 <span class="text-brand-300 text-xs font-bold tracking-widest uppercase mb-3 block">Answer</span>
                                 <h2 id="answer-text" class="text-3xl sm:text-4xl md:text-5xl font-serif font-semibold text-white leading-tight">
@@ -164,7 +162,7 @@
                                 </h2>
                             </div>
                             
-                            <div class="w-full max-w-2xl bg-white/5 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-white/10">
+                            <div class="w-full max-w-2xl bg-white/5 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-white/10 mt-auto">
                                 <h3 class="text-[10px] uppercase tracking-widest text-brand-200/70 mb-3 font-semibold text-left flex items-center gap-2">
                                     <i class="ph-fill ph-info"></i> Historical Context
                                 </h3>
@@ -389,21 +387,21 @@
                 // Unflip first, wait for transition, then change data
                 isFlipped = false;
                 cardInner.classList.remove('rotate-y-180');
+                
+                // Wait for the exact CSS transition time (0.6s) before changing text
                 setTimeout(() => {
                     updateIndex();
                     renderCard();
                     isAnimating = false;
-                }, 350); // Wait for CSS transition halfway
+                }, 600); 
             } else {
-                // Fast transition for front-to-front navigation
+                // Fast transition for front-to-front navigation (Opacity only to avoid Transform conflicts)
                 cardInner.style.opacity = '0';
-                cardInner.style.transform = direction === 'next' ? 'translateX(-30px)' : 'translateX(30px)';
                 
                 setTimeout(() => {
                     updateIndex();
                     renderCard();
                     cardInner.style.opacity = '1';
-                    cardInner.style.transform = 'translateX(0)';
                     
                     setTimeout(() => {
                         isAnimating = false;
