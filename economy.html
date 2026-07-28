@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economy Quest: India</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .pulse-glow {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); /* Emerald glow for Economy */
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Canvas for confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Game specific styles */
+        .draggable-item {
+            cursor: grab;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            transition: all 0.2s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+    <canvas id="confetti-canvas"></canvas>
+
+    <header class="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">Economy Quest</h1>
+                <p class="text-xs text-slate-400 font-medium">UPSC / WBCS Prep - Indian Economy</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-inner">
+                <i class="fa-solid fa-star text-emerald-400"></i>
+                <span id="global-score" class="font-bold text-lg">0</span>
+                <span class="text-xs text-slate-400 hidden sm:inline">XP</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10 w-full max-w-5xl">
+        
+        <!-- Dashboard / Menu View -->
+        <div id="menu-view" class="fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Master Indian Economy</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Engage with interactive mini-games designed to reinforce five-year plans, economic curves, and important committees. Perfect for quick revisions.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Game 1 Card -->
+                <button onclick="startGame('planFinder')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                    <div class="bg-blue-500/20 text-blue-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Five Year Plan Finder</h3>
+                    <p class="text-sm text-slate-400 mb-4">Match the correct Five Year Plan to its primary objective, model, or major outcome.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 2 Card -->
+                <button onclick="startGame('curveCatch')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                    <div class="bg-amber-500/20 text-amber-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-chart-area"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Curve & Concept Catch</h3>
+                    <p class="text-sm text-slate-400 mb-4">Identify famous economic curves (like Lorenz, Laffer) and indices based on their definitions.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 3 Card -->
+                <button onclick="startGame('committeeConnect')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                    <div class="bg-rose-500/20 text-rose-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Committee Connect</h3>
+                    <p class="text-sm text-slate-400 mb-4">True or False: Verify the purpose of significant committees and commissions in India's economic history.</p>
+                    <div class="flex items-center text-emerald-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Container (Hidden by default) -->
+        <div id="game-view" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Menu
+                </button>
+                <div id="game-title" class="text-xl font-bold text-emerald-400">Game Title</div>
+                <div id="game-score-tracker" class="bg-slate-800 px-3 py-1 rounded-md text-sm font-semibold border border-slate-700">Score: 0</div>
+            </div>
+            
+            <!-- Dynamic Game Canvas where JS will inject UI -->
+            <div id="game-canvas" class="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Modal for Alerts/Feedback -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-slate-900/80 backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="text-center">
+                <div id="modal-icon" class="text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-slate-700">
+                    <!-- Icon injected here -->
+                </div>
+                <h3 id="modal-title" class="text-2xl font-bold mb-2 text-white">Title</h3>
+                <p id="modal-message" class="text-slate-300 mb-6">Message goes here.</p>
+                <button onclick="closeModal()" id="modal-btn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURES ---
+
+        const fiveYearPlansData = [
+            { plan: "1st Plan (1951-56)", focus: "Based on Harrod-Domar model; focused on agriculture, price stability, and transport." },
+            { plan: "2nd Plan (1956-61)", focus: "Mahalanobis model; rapid industrialization, focus on heavy & basic industries." },
+            { plan: "3rd Plan (1961-66)", focus: "Aim for self-reliance; failure due to Sino-Indian & Indo-Pak wars; led to 'Plan Holiday'." },
+            { plan: "4th Plan (1969-74)", focus: "Growth with stability and progressive achievement of self-reliance; Nationalization of 14 banks." },
+            { plan: "5th Plan (1974-79)", focus: "Focus on 'Garibi Hatao' (poverty alleviation) and attainment of self-reliance." },
+            { plan: "6th Plan (1980-85)", focus: "Focus on economic liberalization, ending Nehruvian socialism; NABARD established." },
+            { plan: "8th Plan (1992-97)", focus: "Launched after economic reforms of 1991 (LPG); focus on human resource development." },
+            { plan: "11th Plan (2007-12)", focus: "Theme: 'Towards faster and more inclusive growth'." },
+            { plan: "12th Plan (2012-17)", focus: "Theme: 'Faster, More Inclusive and Sustainable Growth'." }
+        ];
+
+        const curvesConceptsData = [
+            { concept: "Lorenz Curve", clue: "A graphical representation of wealth or income inequality. The further away it is from the line of equality, the higher the inequality.", impact: "Measures income distribution." },
+            { concept: "Gini Coefficient", clue: "A statistical measure of economic inequality derived from the Lorenz curve. A value of 0 represents perfect equality, and 1 represents perfect inequality.", impact: "Numerical representation of inequality." },
+            { concept: "Laffer Curve", clue: "Illustrates the relationship between tax rates and the amount of tax revenue collected by governments. Suggests an optimal tax rate.", impact: "Tax rate vs. Revenue." },
+            { concept: "Phillips Curve", clue: "Shows the historical inverse relationship between rates of unemployment and corresponding rates of inflation.", impact: "Inflation vs. Unemployment." },
+            { concept: "Kuznets Curve", clue: "Hypothesizes that as an economy develops, market forces first increase and then decrease economic inequality (inverted U-shape).", impact: "Economic growth vs. Inequality." },
+            { concept: "Gresham's Law", clue: "A monetary principle stating that 'bad money drives out good money' from circulation.", impact: "Currency circulation behavior." },
+            { concept: "Engels Law", clue: "An observation that as income rises, the proportion of income spent on food falls, even if actual expenditure on food rises.", impact: "Income vs. Food expenditure." }
+        ];
+
+        const committeesData = [
+            { statement: "The Narasimham Committee (1991 and 1998) was primarily constituted to recommend reforms in the Indian Banking sector.", isTrue: true, explanation: "Correct. It led to major banking reforms including deregulation of interest rates, lowering SLR/CRR, and promoting competition." },
+            { statement: "The Tendulkar Committee (2009) recommended completely abandoning calorie intake as the basis for estimating poverty in India.", isTrue: true, explanation: "Correct. It shifted away from calorie-based estimation and recommended a broader consumption basket including health and education." },
+            { statement: "The Kelkar Task Force was established to evaluate and recommend changes to India's agricultural pricing policy.", isTrue: false, explanation: "False. The Kelkar Task Force (2002) is famous for its comprehensive recommendations on direct and indirect Tax Reforms." },
+            { statement: "The Rangarajan Committee (2012) revised the poverty line methodology and reverted slightly to incorporating calorie norms.", isTrue: true, explanation: "Correct. It reviewed the Tendulkar methodology and included nutritional requirements in its poverty estimation." },
+            { statement: "The Urjit Patel Committee was formed to review the monetary policy framework, leading to the adoption of flexible inflation targeting.", isTrue: true, explanation: "Correct. Its recommendations led to the RBI adopting a CPI-based inflation target (usually 4% +/- 2%)." },
+            { statement: "The Kothari Commission (1964-66) was primarily focused on industrial licensing and monopoly control.", isTrue: false, explanation: "False. The Kothari Commission was set up to examine all aspects of the educational sector in India. The Hazari Committee (1967) or Dutt Committee (1969) dealt with industrial licensing." },
+            { statement: "The Raja Chelliah Committee is known for its landmark recommendations on tax reforms in India during the early 1990s.", isTrue: true, explanation: "Correct. Formed in 1991, it laid the foundation for rationalizing the tax structure, including lowering marginal tax rates." }
+        ];
+
+        // --- GLOBAL STATE ---
+        let globalScore = 0;
+        let currentGameScore = 0;
+        let currentActiveGame = null;
+
+        // --- UTILITY FUNCTIONS ---
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function showModal(title, message, type, onContinue = null) {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const iconEl = document.getElementById('modal-icon');
+            const btnEl = document.getElementById('modal-btn');
+
+            titleEl.textContent = title;
+            messageEl.innerHTML = message;
+
+            if (type === 'success') {
+                iconEl.innerHTML = '<i class="fa-solid fa-check text-green-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-green-500/20';
+                btnEl.className = 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else if (type === 'error') {
+                iconEl.innerHTML = '<i class="fa-solid fa-xmark text-red-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20';
+                btnEl.className = 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else {
+                iconEl.innerHTML = '<i class="fa-solid fa-info text-emerald-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-emerald-500/20';
+                btnEl.className = 'w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors';
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            window.modalCallback = onContinue;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (window.modalCallback) {
+                    window.modalCallback();
+                    window.modalCallback = null;
+                }
+            }, 300);
+        }
+
+        function updateGlobalScore(points) {
+            globalScore += points;
+            const scoreEl = document.getElementById('global-score');
+            scoreEl.textContent = globalScore;
+            
+            scoreEl.classList.add('text-emerald-400', 'scale-125');
+            setTimeout(() => {
+                scoreEl.classList.remove('text-emerald-400', 'scale-125');
+            }, 300);
+        }
+
+        function updateGameScore(points) {
+            currentGameScore += points;
+            document.getElementById('game-score-tracker').textContent = `Score: ${currentGameScore}`;
+        }
+
+        function switchView(viewId) {
+            document.getElementById('menu-view').classList.add('hidden');
+            document.getElementById('game-view').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function returnToMenu() {
+            switchView('menu-view');
+            currentActiveGame = null;
+            document.getElementById('game-canvas').innerHTML = '';
+        }
+
+        function startGame(gameType) {
+            currentActiveGame = gameType;
+            currentGameScore = 0;
+            updateGameScore(0);
+            switchView('game-view');
+            
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = ''; 
+            
+            if (gameType === 'planFinder') {
+                document.getElementById('game-title').textContent = "Five Year Plan Finder";
+                initPlanGame();
+            } else if (gameType === 'curveCatch') {
+                document.getElementById('game-title').textContent = "Curve & Concept Catch";
+                initCurveGame();
+            } else if (gameType === 'committeeConnect') {
+                document.getElementById('game-title').textContent = "Committee Connect";
+                initCommitteeGame();
+            }
+        }
+
+        // --- GAME 1: FIVE YEAR PLAN FINDER ---
+        let currentPlans = [];
+        let plansMatched = 0;
+
+        function initPlanGame() {
+            const canvas = document.getElementById('game-canvas');
+            plansMatched = 0;
+
+            const shuffledFull = shuffleArray([...fiveYearPlansData]);
+            currentPlans = shuffledFull.slice(0, 4); // 4 pairs per round
+
+            const focuses = shuffleArray([...currentPlans]);
+
+            let plansHTML = currentPlans.map(p => 
+                `<div draggable="true" ondragstart="drag(event)" id="drag-${p.plan.replace(/\s+/g, '')}" data-plan="${p.plan}" class="draggable-item bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 text-blue-100 font-bold py-3 px-4 rounded-lg shadow-md mb-3 text-center transition-colors">
+                    ${p.plan}
+                </div>`
+            ).join('');
+
+            let focusesHTML = focuses.map((f, index) => 
+                `<div class="flex items-center gap-4 mb-4">
+                    <div id="drop-${index}" ondrop="drop(event)" ondragover="allowDrop(event)" data-match="${f.plan}" class="drop-zone w-36 h-16 border-2 border-dashed border-slate-600 rounded-lg flex flex-shrink-0 items-center justify-center bg-slate-800/50 text-slate-500 text-sm font-medium">
+                        Drop Here
+                    </div>
+                    <div class="flex-1 bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-200 shadow-inner text-sm md:text-base">
+                        ${f.focus}
+                    </div>
+                </div>`
+            ).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-4xl flex flex-col h-full fade-in">
+                    <p class="text-center text-slate-400 mb-6">Drag the Five Year Plan to its correct focus or outcome.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Draggable Plans (Bank) -->
+                        <div class="w-full md:w-1/3" id="plan-bank">
+                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Plans</h4>
+                            ${plansHTML}
+                        </div>
+                        
+                        <!-- Drop Zones (Focuses) -->
+                        <div class="w-full md:w-2/3">
+                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Focus / Outcomes</h4>
+                            ${focusesHTML}
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="plan-next-btn-container">
+                        <button onclick="initPlanGame()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow">
+                            Next Round <i class="fa-solid fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("plan", ev.target.dataset.plan);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const targetDropZone = ev.currentTarget;
+            targetDropZone.classList.remove('drag-over');
+
+            // If it already has a child, don't allow drop (simplification)
+            if (targetDropZone.children.length > 0 && !targetDropZone.textContent.includes('Drop Here')) {
+                return;
+            }
+
+            const dataId = ev.dataTransfer.getData("text");
+            const draggedPlan = ev.dataTransfer.getData("plan");
+            const requiredPlan = targetDropZone.dataset.match;
+            const draggedElement = document.getElementById(dataId);
+
+            if (draggedPlan === requiredPlan) {
+                // Correct match
+                targetDropZone.innerHTML = '';
+                
+                // Style the dropped item
+                draggedElement.className = "w-full h-full flex items-center justify-center bg-green-500/20 border-2 border-green-500 text-green-100 font-bold rounded-lg shadow-md cursor-default text-xs md:text-sm";
+                draggedElement.draggable = false;
+                
+                targetDropZone.appendChild(draggedElement);
+                targetDropZone.classList.remove('border-dashed', 'border-slate-600');
+                targetDropZone.classList.add('border-none');
+
+                updateGameScore(20);
+                updateGlobalScore(20);
+                plansMatched++;
+
+                if (plansMatched === 4) {
+                    triggerConfetti();
+                    updateGlobalScore(50); // bonus
+                    document.getElementById('plan-next-btn-container').classList.remove('hidden');
+                    showModal("Target Achieved!", "You correctly matched all plans. +50 Bonus XP", "success");
+                }
+            } else {
+                // Incorrect match
+                targetDropZone.classList.add('shake', 'bg-red-500/20', 'border-red-500');
+                updateGameScore(-5);
+                setTimeout(() => {
+                    targetDropZone.classList.remove('shake', 'bg-red-500/20', 'border-red-500');
+                }, 500);
+            }
+        }
+
+        // Add event listeners to remove drag-over class when leaving
+        document.addEventListener('dragleave', function(event) {
+            if (event.target.classList && event.target.classList.contains('drop-zone')) {
+                event.target.classList.remove('drag-over');
+            }
+        });
+
+        // --- GAME 2: CURVE & CONCEPT CATCH ---
+        let currentCurveSet = [];
+        let currentCurveIndex = 0;
+
+        function initCurveGame() {
+            const canvas = document.getElementById('game-canvas');
+            currentCurveSet = shuffleArray([...curvesConceptsData]).slice(0, 5);
+            currentCurveIndex = 0;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
+                    <div class="flex justify-between items-center w-full mb-4 text-sm text-slate-400 font-medium">
+                        <span>Concept <span id="curve-current-num">1</span>/5</span>
+                        <span>Identify the Term</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-2xl p-6 md:p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[180px] flex flex-col items-center justify-center text-center relative" id="curve-card">
+                        <div class="text-amber-400 text-3xl mb-4"><i class="fa-solid fa-book-open-reader"></i></div>
+                        <p class="text-lg md:text-xl text-slate-100 font-medium italic" id="curve-clue">Loading clue...</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full" id="curve-options">
+                        <!-- Options injected here -->
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="curve-next-btn-container">
+                        <button onclick="initCurveGame()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md">
+                            Play Next Set
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            displayCurrentCurve();
+        }
+
+        function displayCurrentCurve() {
+            if (currentCurveIndex >= currentCurveSet.length) {
+                // Round Complete
+                document.getElementById('curve-card').innerHTML = `<div class="text-green-400 text-5xl mb-4"><i class="fa-solid fa-trophy"></i></div><p class="text-2xl text-white font-bold">Round Complete!</p>`;
+                document.getElementById('curve-options').innerHTML = '';
+                document.getElementById('curve-next-btn-container').classList.remove('hidden');
+                triggerConfetti();
+                updateGlobalScore(40);
+                return;
+            }
+
+            const currentData = currentCurveSet[currentCurveIndex];
+            document.getElementById('curve-clue').textContent = `"${currentData.clue}"`;
+            document.getElementById('curve-current-num').textContent = currentCurveIndex + 1;
+
+            // Generate options (1 correct, 3 distractors)
+            let distractors = curvesConceptsData.filter(c => c.concept !== currentData.concept);
+            distractors = shuffleArray(distractors).slice(0, 3);
+            
+            let options = [currentData, ...distractors];
+            options = shuffleArray(options);
+
+            const optionsContainer = document.getElementById('curve-options');
+            optionsContainer.innerHTML = '';
+            
+            // Re-animate card
+            const card = document.getElementById('curve-card');
+            card.classList.remove('fade-in');
+            void card.offsetWidth;
+            card.classList.add('fade-in');
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-amber-500 font-semibold py-4 px-6 rounded-xl transition-all shadow-sm text-left flex items-center justify-between group';
+                btn.innerHTML = `<span>${opt.concept}</span> <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-amber-400 transition-colors"></i>`;
+                btn.onclick = () => handleCurveAnswer(opt.concept, currentData.concept, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleCurveAnswer(selected, correct, btnElement) {
+            // Disable all buttons immediately
+            const buttons = document.getElementById('curve-options').querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            const currentData = currentCurveSet[currentCurveIndex];
+
+            if (selected === correct) {
+                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
+                btnElement.classList.add('border-green-500', 'bg-green-500/20', 'text-green-100');
+                updateGameScore(20);
+                updateGlobalScore(20);
+                
+                setTimeout(() => {
+                    showModal("Correct!", `Key area: ${currentData.impact}`, "success", () => {
+                        currentCurveIndex++;
+                        displayCurrentCurve();
+                    });
+                }, 400);
+
+            } else {
+                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
+                btnElement.classList.add('border-red-500', 'bg-red-500/20', 'text-red-100', 'shake');
+                
+                // Highlight correct answer
+                buttons.forEach(b => {
+                    if(b.textContent.trim().includes(correct)) {
+                         b.classList.remove('border-slate-600');
+                         b.classList.add('border-green-500', 'text-green-400');
+                    }
+                });
+
+                updateGameScore(-5);
+                
+                setTimeout(() => {
+                    showModal("Incorrect", `The correct answer was ${correct}.<br><br>Key area: ${currentData.impact}`, "error", () => {
+                        currentCurveIndex++;
+                        displayCurrentCurve();
+                    });
+                }, 800);
+            }
+        }
+
+        // --- GAME 3: COMMITTEE CONNECT ---
+        let currentCommitteeSet = [];
+        let currentCommitteeIndex = 0;
+
+        function initCommitteeGame() {
+            const canvas = document.getElementById('game-canvas');
+            
+            currentCommitteeSet = shuffleArray([...committeesData]).slice(0, 5);
+            currentCommitteeIndex = 0;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
+                    <div class="flex justify-between items-center w-full mb-6 text-sm text-slate-400 font-medium">
+                        <span>Report <span id="comm-current-num">1</span> of 5</span>
+                        <span>True or False</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-2xl p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[160px] flex items-center justify-center text-center relative overflow-hidden" id="comm-card">
+                        <div class="absolute top-0 left-0 p-4 text-rose-500/10">
+                            <i class="fa-solid fa-users-viewfinder text-8xl"></i>
+                        </div>
+                        <p class="text-lg md:text-xl text-slate-100 font-semibold relative z-10 leading-relaxed" id="comm-statement">Loading...</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 w-full max-w-md" id="comm-controls">
+                        <button onclick="handleCommitteeAnswer(true)" class="bg-emerald-500/10 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-500/30 hover:border-emerald-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-check text-2xl"></i> TRUE
+                        </button>
+                        <button onclick="handleCommitteeAnswer(false)" class="bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-xmark text-2xl"></i> FALSE
+                        </button>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="comm-next-btn-container">
+                        <button onclick="initCommitteeGame()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md text-lg">
+                            Evaluate Next Batch
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            displayCurrentCommittee();
+        }
+
+        function displayCurrentCommittee() {
+            if (currentCommitteeIndex < currentCommitteeSet.length) {
+                const comm = currentCommitteeSet[currentCommitteeIndex];
+                const statementEl = document.getElementById('comm-statement');
+                const cardEl = document.getElementById('comm-card');
+                
+                cardEl.classList.remove('fade-in');
+                void cardEl.offsetWidth; 
+                cardEl.classList.add('fade-in');
+                
+                statementEl.textContent = comm.statement;
+                document.getElementById('comm-current-num').textContent = currentCommitteeIndex + 1;
+            } else {
+                // Round Complete
+                document.getElementById('comm-card').innerHTML = `<p class="text-2xl text-emerald-400 font-bold">Reports Analyzed!</p>`;
+                document.getElementById('comm-controls').classList.add('hidden');
+                document.getElementById('comm-next-btn-container').classList.remove('hidden');
+                triggerConfetti();
+                updateGlobalScore(30);
+            }
+        }
+
+        function handleCommitteeAnswer(userAnswer) {
+            const comm = currentCommitteeSet[currentCommitteeIndex];
+            
+            if (userAnswer === comm.isTrue) {
+                // Correct
+                updateGameScore(20);
+                updateGlobalScore(20);
+                showModal("Accurate Analysis!", comm.explanation, "success", () => {
+                    currentCommitteeIndex++;
+                    displayCurrentCommittee();
+                });
+            } else {
+                // Incorrect
+                updateGameScore(-10);
+                showModal("Correction Required", comm.explanation, "error", () => {
+                    currentCommitteeIndex++;
+                    displayCurrentCommittee();
+                });
+            }
+        }
+
+        // --- VISUAL EFFECTS (CONFETTI) ---
+        let particles = [];
+        const colors = ['#10b981', '#34d399', '#059669', '#6ee7b7', '#e2e8f0', '#f8fafc'];
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    r: Math.random() * 6 + 2,
+                    dx: Math.random() * 20 - 10,
+                    dy: Math.random() * -20 - 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let activeParticles = 0;
+            
+            particles.forEach((p, index) => {
+                if (p.y <= canvas.height) {
+                    activeParticles++;
+                    p.tiltAngle += p.tiltAngleInc;
+                    p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle) * 2;
+                    p.dy += 0.5; // gravity
+                    p.x += p.dx;
+                    p.y += p.dy;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                    ctx.stroke();
+                }
+            });
+            
+            particles = particles.filter(p => p.y <= canvas.height);
+
+            if (activeParticles > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('confetti-canvas');
+            if(canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+        // Initialize state on load
+        window.onload = () => {
+            switchView('menu-view');
+        };
+
+    </script>
+</body>
+</html>
