@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Quest: Science Prep</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .pulse-glow {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); /* Green glow for Biology */
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Canvas for confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Game specific styles */
+        .draggable-item {
+            cursor: grab;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            transition: all 0.2s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative">
+    <canvas id="confetti-canvas"></canvas>
+
+    <header class="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="bg-green-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">Biology Quest</h1>
+                <p class="text-xs text-slate-400 font-medium">UPSC / WBCS Prep - General Science</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-inner">
+                <i class="fa-solid fa-star text-green-400"></i>
+                <span id="global-score" class="font-bold text-lg">0</span>
+                <span class="text-xs text-slate-400 hidden sm:inline">XP</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 relative z-10 w-full max-w-5xl">
+        
+        <!-- Dashboard / Menu View -->
+        <div id="menu-view" class="fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Master Biological Sciences</h2>
+                <p class="text-slate-400 max-w-2xl mx-auto">Engage with interactive mini-games designed to reinforce cell biology, human diseases, and nutrition. Perfect for quick revisions.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Game 1 Card -->
+                <button onclick="startGame('cellSorter')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                    <div class="bg-purple-500/20 text-purple-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Cell Structure Sorter</h3>
+                    <p class="text-sm text-slate-400 mb-4">Match cell organelles (like Mitochondria, Ribosomes) to their primary functions.</p>
+                    <div class="flex items-center text-green-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 2 Card -->
+                <button onclick="startGame('diseaseDetective')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                    <div class="bg-red-500/20 text-red-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-viruses"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Disease Detective</h3>
+                    <p class="text-sm text-slate-400 mb-4">Identify diseases based on their symptoms, vectors, or causative pathogens.</p>
+                    <div class="flex items-center text-green-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 3 Card -->
+                <button onclick="startGame('vitaminVault')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                    <div class="bg-yellow-500/20 text-yellow-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-apple-whole"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-slate-100">Vitamin Vault</h3>
+                    <p class="text-sm text-slate-400 mb-4">True or False: Verify the relationship between vitamins/minerals and their deficiency diseases.</p>
+                    <div class="flex items-center text-green-400 text-sm font-semibold">
+                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Container (Hidden by default) -->
+        <div id="game-view" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Menu
+                </button>
+                <div id="game-title" class="text-xl font-bold text-green-400">Game Title</div>
+                <div id="game-score-tracker" class="bg-slate-800 px-3 py-1 rounded-md text-sm font-semibold border border-slate-700">Score: 0</div>
+            </div>
+            
+            <!-- Dynamic Game Canvas where JS will inject UI -->
+            <div id="game-canvas" class="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom Modal for Alerts/Feedback -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-slate-900/80 backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+            <div class="text-center">
+                <div id="modal-icon" class="text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-slate-700">
+                    <!-- Icon injected here -->
+                </div>
+                <h3 id="modal-title" class="text-2xl font-bold mb-2 text-white">Title</h3>
+                <p id="modal-message" class="text-slate-300 mb-6">Message goes here.</p>
+                <button onclick="closeModal()" id="modal-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURES ---
+
+        const cellOrganellesData = [
+            { organelle: "Mitochondria", function: "Powerhouse of the cell; site of cellular respiration and ATP production." },
+            { organelle: "Ribosomes", function: "Site of protein synthesis; can be free-floating or attached to the ER." },
+            { organelle: "Nucleus", function: "Control center of the cell; contains genetic material (DNA)." },
+            { organelle: "Lysosomes", function: "Contains digestive enzymes; acts as the waste disposal system of the cell." },
+            { organelle: "Golgi Apparatus", function: "Modifies, sorts, and packages proteins and lipids for transport." },
+            { organelle: "Endoplasmic Reticulum (Rough)", function: "Studded with ribosomes; involved in the synthesis and transport of proteins." },
+            { organelle: "Chloroplast", function: "Site of photosynthesis in plant cells; contains chlorophyll." },
+            { organelle: "Cell Membrane", function: "Semi-permeable barrier that controls the movement of substances in and out of the cell." },
+            { organelle: "Vacuole", function: "Storage sac for water, nutrients, or waste; very large in plant cells." }
+        ];
+
+        const diseasesData = [
+            { disease: "Malaria", clue: "Caused by Plasmodium parasite, transmitted by the bite of an infected female Anopheles mosquito.", impact: "Pathogen: Protozoan" },
+            { disease: "Tuberculosis (TB)", clue: "A highly contagious bacterial infection that primarily affects the lungs, caused by Mycobacterium tuberculosis.", impact: "Pathogen: Bacteria" },
+            { disease: "Dengue", clue: "A viral infection transmitted by Aedes mosquitoes, often causing high fever, severe headache, and joint pain.", impact: "Pathogen: Virus" },
+            { disease: "Ringworm", clue: "A common skin infection that causes a red, itchy, circular rash, but despite its name, it's not caused by a worm.", impact: "Pathogen: Fungi" },
+            { disease: "Cholera", clue: "An acute diarrheal illness caused by infection of the intestine with Vibrio cholerae bacteria, often from contaminated water.", impact: "Pathogen: Bacteria" },
+            { disease: "Typhoid", clue: "Caused by Salmonella Typhi bacteria, spreads through contaminated food and water, symptoms include prolonged high fever.", impact: "Pathogen: Bacteria" },
+            { disease: "AIDS", clue: "A condition caused by HIV, which attacks the body's immune system, specifically CD4 cells.", impact: "Pathogen: Virus" },
+            { disease: "Kala-azar", clue: "Also known as Visceral leishmaniasis, caused by Leishmania parasites transmitted by sandflies.", impact: "Pathogen: Protozoan" }
+        ];
+
+        const vitaminsData = [
+            { statement: "Vitamin A deficiency primarily leads to Night Blindness and Xerophthalmia.", isTrue: true, explanation: "Correct. Vitamin A (Retinol) is crucial for vision and eye health." },
+            { statement: "Scurvy is caused by a severe deficiency of Vitamin D.", isTrue: false, explanation: "False. Scurvy is caused by a deficiency of Vitamin C (Ascorbic Acid). Vitamin D deficiency causes Rickets or Osteomalacia." },
+            { statement: "Vitamin K is essential for blood clotting; its deficiency can lead to excessive bleeding.", isTrue: true, explanation: "Correct. Vitamin K plays a vital role in synthesizing proteins needed for blood coagulation." },
+            { statement: "Beri-Beri is a disease caused by the deficiency of Vitamin B12.", isTrue: false, explanation: "False. Beri-Beri is caused by a deficiency of Vitamin B1 (Thiamine). Vitamin B12 deficiency leads to Pernicious anemia." },
+            { statement: "Iodine deficiency in the diet is the most common cause of Goiter (enlargement of the thyroid gland).", isTrue: true, explanation: "Correct. The thyroid gland needs iodine to produce thyroid hormones." },
+            { statement: "Pellagra is a disease characterized by the '4 Ds' (dermatitis, diarrhea, dementia, death) and is caused by Vitamin B3 (Niacin) deficiency.", isTrue: true, explanation: "Correct. Niacin is crucial for converting food into energy and maintaining healthy skin and nerves." },
+            { statement: "Iron deficiency is a leading cause of Kwashiorkor, a form of severe protein malnutrition.", isTrue: false, explanation: "False. Iron deficiency causes Anemia. Kwashiorkor is caused by a severe lack of protein in the diet." }
+        ];
+
+        // --- GLOBAL STATE ---
+        let globalScore = 0;
+        let currentGameScore = 0;
+        let currentActiveGame = null;
+
+        // --- UTILITY FUNCTIONS ---
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function showModal(title, message, type, onContinue = null) {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const iconEl = document.getElementById('modal-icon');
+            const btnEl = document.getElementById('modal-btn');
+
+            titleEl.textContent = title;
+            messageEl.innerHTML = message;
+
+            if (type === 'success') {
+                iconEl.innerHTML = '<i class="fa-solid fa-check text-green-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-green-500/20';
+                btnEl.className = 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else if (type === 'error') {
+                iconEl.innerHTML = '<i class="fa-solid fa-xmark text-red-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20';
+                btnEl.className = 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors';
+            } else {
+                iconEl.innerHTML = '<i class="fa-solid fa-info text-blue-400"></i>';
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-blue-500/20';
+                btnEl.className = 'w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors';
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            window.modalCallback = onContinue;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (window.modalCallback) {
+                    window.modalCallback();
+                    window.modalCallback = null;
+                }
+            }, 300);
+        }
+
+        function updateGlobalScore(points) {
+            globalScore += points;
+            const scoreEl = document.getElementById('global-score');
+            scoreEl.textContent = globalScore;
+            
+            scoreEl.classList.add('text-green-400', 'scale-125');
+            setTimeout(() => {
+                scoreEl.classList.remove('text-green-400', 'scale-125');
+            }, 300);
+        }
+
+        function updateGameScore(points) {
+            currentGameScore += points;
+            document.getElementById('game-score-tracker').textContent = `Score: ${currentGameScore}`;
+        }
+
+        function switchView(viewId) {
+            document.getElementById('menu-view').classList.add('hidden');
+            document.getElementById('game-view').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function returnToMenu() {
+            switchView('menu-view');
+            currentActiveGame = null;
+            document.getElementById('game-canvas').innerHTML = '';
+        }
+
+        function startGame(gameType) {
+            currentActiveGame = gameType;
+            currentGameScore = 0;
+            updateGameScore(0);
+            switchView('game-view');
+            
+            const canvas = document.getElementById('game-canvas');
+            canvas.innerHTML = ''; 
+            
+            if (gameType === 'cellSorter') {
+                document.getElementById('game-title').textContent = "Cell Structure Sorter";
+                initCellGame();
+            } else if (gameType === 'diseaseDetective') {
+                document.getElementById('game-title').textContent = "Disease Detective";
+                initDiseaseGame();
+            } else if (gameType === 'vitaminVault') {
+                document.getElementById('game-title').textContent = "Vitamin Vault";
+                initVitaminGame();
+            }
+        }
+
+        // --- GAME 1: CELL STRUCTURE SORTER (Drag and Drop) ---
+        let currentOrganelles = [];
+        let organellesMatched = 0;
+
+        function initCellGame() {
+            const canvas = document.getElementById('game-canvas');
+            organellesMatched = 0;
+
+            const shuffledFull = shuffleArray([...cellOrganellesData]);
+            currentOrganelles = shuffledFull.slice(0, 4); // 4 pairs per round
+
+            const functionsList = shuffleArray([...currentOrganelles]);
+
+            let organellesHTML = currentOrganelles.map(o => 
+                `<div draggable="true" ondragstart="drag(event)" id="drag-${o.organelle.replace(/\s+/g, '')}" data-organelle="${o.organelle}" class="draggable-item bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-100 font-bold py-3 px-4 rounded-lg shadow-md mb-3 text-center transition-colors">
+                    ${o.organelle}
+                </div>`
+            ).join('');
+
+            let functionsHTML = functionsList.map((f, index) => 
+                `<div class="flex items-center gap-4 mb-4">
+                    <div id="drop-${index}" ondrop="drop(event)" ondragover="allowDrop(event)" data-match="${f.organelle}" class="drop-zone w-36 h-16 border-2 border-dashed border-slate-600 rounded-lg flex flex-shrink-0 items-center justify-center bg-slate-800/50 text-slate-500 text-sm font-medium">
+                        Drop Here
+                    </div>
+                    <div class="flex-1 bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-200 shadow-inner text-sm md:text-base">
+                        ${f.function}
+                    </div>
+                </div>`
+            ).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-4xl flex flex-col h-full fade-in">
+                    <p class="text-center text-slate-400 mb-6">Drag the Organelle to its correct cellular function.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Draggable Organelles (Bank) -->
+                        <div class="w-full md:w-1/3" id="organelle-bank">
+                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Organelles</h4>
+                            ${organellesHTML}
+                        </div>
+                        
+                        <!-- Drop Zones (Functions) -->
+                        <div class="w-full md:w-2/3">
+                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Functions</h4>
+                            ${functionsHTML}
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="cell-next-btn-container">
+                        <button onclick="initCellGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow">
+                            Next Round <i class="fa-solid fa-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("organelle", ev.target.dataset.organelle);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const targetDropZone = ev.currentTarget;
+            targetDropZone.classList.remove('drag-over');
+
+            if (targetDropZone.children.length > 0 && !targetDropZone.textContent.includes('Drop Here')) {
+                return;
+            }
+
+            const dataId = ev.dataTransfer.getData("text");
+            const draggedOrganelle = ev.dataTransfer.getData("organelle");
+            const requiredOrganelle = targetDropZone.dataset.match;
+            const draggedElement = document.getElementById(dataId);
+
+            if (draggedOrganelle === requiredOrganelle) {
+                // Correct match
+                targetDropZone.innerHTML = '';
+                draggedElement.className = "w-full h-full flex items-center justify-center bg-green-500/20 border-2 border-green-500 text-green-100 font-bold rounded-lg shadow-md cursor-default text-xs md:text-sm";
+                draggedElement.draggable = false;
+                
+                targetDropZone.appendChild(draggedElement);
+                targetDropZone.classList.remove('border-dashed', 'border-slate-600');
+                targetDropZone.classList.add('border-none');
+
+                updateGameScore(20);
+                updateGlobalScore(20);
+                organellesMatched++;
+
+                if (organellesMatched === 4) {
+                    triggerConfetti();
+                    updateGlobalScore(50); // bonus
+                    document.getElementById('cell-next-btn-container').classList.remove('hidden');
+                    showModal("Microscopic Mastery!", "You correctly sorted the organelles. +50 Bonus XP", "success");
+                }
+            } else {
+                // Incorrect match
+                targetDropZone.classList.add('shake', 'bg-red-500/20', 'border-red-500');
+                updateGameScore(-5);
+                setTimeout(() => {
+                    targetDropZone.classList.remove('shake', 'bg-red-500/20', 'border-red-500');
+                }, 500);
+            }
+        }
+
+        document.addEventListener('dragleave', function(event) {
+            if (event.target.classList && event.target.classList.contains('drop-zone')) {
+                event.target.classList.remove('drag-over');
+            }
+        });
+
+        // --- GAME 2: DISEASE DETECTIVE (Multiple Choice) ---
+        let currentDiseaseSet = [];
+        let currentDiseaseIndex = 0;
+
+        function initDiseaseGame() {
+            const canvas = document.getElementById('game-canvas');
+            currentDiseaseSet = shuffleArray([...diseasesData]).slice(0, 5);
+            currentDiseaseIndex = 0;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
+                    <div class="flex justify-between items-center w-full mb-4 text-sm text-slate-400 font-medium">
+                        <span>Case <span id="disease-current-num">1</span>/5</span>
+                        <span>Identify the Disease</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-2xl p-6 md:p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[180px] flex flex-col items-center justify-center text-center relative" id="disease-card">
+                        <div class="text-red-400 text-3xl mb-4"><i class="fa-solid fa-stethoscope"></i></div>
+                        <p class="text-lg md:text-xl text-slate-100 font-medium italic" id="disease-clue">Loading case file...</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full" id="disease-options">
+                        <!-- Options injected here -->
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="disease-next-btn-container">
+                        <button onclick="initDiseaseGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md">
+                            Analyze Next Batch
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            displayCurrentDisease();
+        }
+
+        function displayCurrentDisease() {
+            if (currentDiseaseIndex >= currentDiseaseSet.length) {
+                document.getElementById('disease-card').innerHTML = `<div class="text-green-400 text-5xl mb-4"><i class="fa-solid fa-user-doctor"></i></div><p class="text-2xl text-white font-bold">Diagnosis Complete!</p>`;
+                document.getElementById('disease-options').innerHTML = '';
+                document.getElementById('disease-next-btn-container').classList.remove('hidden');
+                triggerConfetti();
+                updateGlobalScore(40);
+                return;
+            }
+
+            const currentData = currentDiseaseSet[currentDiseaseIndex];
+            document.getElementById('disease-clue').textContent = `"${currentData.clue}"`;
+            document.getElementById('disease-current-num').textContent = currentDiseaseIndex + 1;
+
+            let distractors = diseasesData.filter(d => d.disease !== currentData.disease);
+            distractors = shuffleArray(distractors).slice(0, 3);
+            
+            let options = [currentData, ...distractors];
+            options = shuffleArray(options);
+
+            const optionsContainer = document.getElementById('disease-options');
+            optionsContainer.innerHTML = '';
+            
+            const card = document.getElementById('disease-card');
+            card.classList.remove('fade-in');
+            void card.offsetWidth;
+            card.classList.add('fade-in');
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-red-500 font-semibold py-4 px-6 rounded-xl transition-all shadow-sm text-left flex items-center justify-between group';
+                btn.innerHTML = `<span>${opt.disease}</span> <i class="fa-solid fa-virus text-slate-500 group-hover:text-red-400 transition-colors"></i>`;
+                btn.onclick = () => handleDiseaseAnswer(opt.disease, currentData.disease, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleDiseaseAnswer(selected, correct, btnElement) {
+            const buttons = document.getElementById('disease-options').querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            const currentData = currentDiseaseSet[currentDiseaseIndex];
+
+            if (selected === correct) {
+                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
+                btnElement.classList.add('border-green-500', 'bg-green-500/20', 'text-green-100');
+                updateGameScore(20);
+                updateGlobalScore(20);
+                
+                setTimeout(() => {
+                    showModal("Correct Diagnosis!", `Fact: ${currentData.impact}`, "success", () => {
+                        currentDiseaseIndex++;
+                        displayCurrentDisease();
+                    });
+                }, 400);
+
+            } else {
+                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
+                btnElement.classList.add('border-red-500', 'bg-red-500/20', 'text-red-100', 'shake');
+                
+                buttons.forEach(b => {
+                    if(b.textContent.trim().includes(correct)) {
+                         b.classList.remove('border-slate-600');
+                         b.classList.add('border-green-500', 'text-green-400');
+                    }
+                });
+
+                updateGameScore(-5);
+                
+                setTimeout(() => {
+                    showModal("Misdiagnosis", `The correct answer was ${correct}.<br><br>Fact: ${currentData.impact}`, "error", () => {
+                        currentDiseaseIndex++;
+                        displayCurrentDisease();
+                    });
+                }, 800);
+            }
+        }
+
+        // --- GAME 3: VITAMIN VAULT (True/False) ---
+        let currentVitaminSet = [];
+        let currentVitaminIndex = 0;
+
+        function initVitaminGame() {
+            const canvas = document.getElementById('game-canvas');
+            
+            currentVitaminSet = shuffleArray([...vitaminsData]).slice(0, 5);
+            currentVitaminIndex = 0;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
+                    <div class="flex justify-between items-center w-full mb-6 text-sm text-slate-400 font-medium">
+                        <span>Statement <span id="vit-current-num">1</span> of 5</span>
+                        <span>True or False</span>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-2xl p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[160px] flex items-center justify-center text-center relative overflow-hidden" id="vit-card">
+                        <div class="absolute top-0 left-0 p-4 text-yellow-500/10">
+                            <i class="fa-solid fa-flask text-8xl"></i>
+                        </div>
+                        <p class="text-lg md:text-xl text-slate-100 font-semibold relative z-10 leading-relaxed" id="vit-statement">Loading...</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 w-full max-w-md" id="vit-controls">
+                        <button onclick="handleVitaminAnswer(true)" class="bg-green-500/10 hover:bg-green-500/30 text-green-300 hover:text-white border border-green-500/30 hover:border-green-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-check text-2xl"></i> TRUE
+                        </button>
+                        <button onclick="handleVitaminAnswer(false)" class="bg-red-500/10 hover:bg-red-500/30 text-red-300 hover:text-white border border-red-500/30 hover:border-red-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-xmark text-2xl"></i> FALSE
+                        </button>
+                    </div>
+
+                    <div class="mt-8 flex justify-center hidden w-full" id="vit-next-btn-container">
+                        <button onclick="initVitaminGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md text-lg">
+                            Evaluate Next Set
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            displayCurrentVitamin();
+        }
+
+        function displayCurrentVitamin() {
+            if (currentVitaminIndex < currentVitaminSet.length) {
+                const vit = currentVitaminSet[currentVitaminIndex];
+                const statementEl = document.getElementById('vit-statement');
+                const cardEl = document.getElementById('vit-card');
+                
+                cardEl.classList.remove('fade-in');
+                void cardEl.offsetWidth; 
+                cardEl.classList.add('fade-in');
+                
+                statementEl.textContent = vit.statement;
+                document.getElementById('vit-current-num').textContent = currentVitaminIndex + 1;
+            } else {
+                document.getElementById('vit-card').innerHTML = `<p class="text-2xl text-green-400 font-bold">Nutrition Expert!</p>`;
+                document.getElementById('vit-controls').classList.add('hidden');
+                document.getElementById('vit-next-btn-container').classList.remove('hidden');
+                triggerConfetti();
+                updateGlobalScore(30);
+            }
+        }
+
+        function handleVitaminAnswer(userAnswer) {
+            const vit = currentVitaminSet[currentVitaminIndex];
+            
+            if (userAnswer === vit.isTrue) {
+                updateGameScore(20);
+                updateGlobalScore(20);
+                showModal("Fact Confirmed!", vit.explanation, "success", () => {
+                    currentVitaminIndex++;
+                    displayCurrentVitamin();
+                });
+            } else {
+                updateGameScore(-10);
+                showModal("Correction Required", vit.explanation, "error", () => {
+                    currentVitaminIndex++;
+                    displayCurrentVitamin();
+                });
+            }
+        }
+
+        // --- VISUAL EFFECTS (CONFETTI) ---
+        let particles = [];
+        const colors = ['#22c55e', '#4ade80', '#16a34a', '#86efac', '#e2e8f0', '#f8fafc'];
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 + 100,
+                    r: Math.random() * 6 + 2,
+                    dx: Math.random() * 20 - 10,
+                    dy: Math.random() * -20 - 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let activeParticles = 0;
+            
+            particles.forEach((p, index) => {
+                if (p.y <= canvas.height) {
+                    activeParticles++;
+                    p.tiltAngle += p.tiltAngleInc;
+                    p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle) * 2;
+                    p.dy += 0.5; // gravity
+                    p.x += p.dx;
+                    p.y += p.dy;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                    ctx.stroke();
+                }
+            });
+            
+            particles = particles.filter(p => p.y <= canvas.height);
+
+            if (activeParticles > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('confetti-canvas');
+            if(canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+        // Initialize state on load
+        window.onload = () => {
+            switchView('menu-view');
+        };
+
+    </script>
+</body>
+</html>
