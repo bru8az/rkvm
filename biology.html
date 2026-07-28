@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biology Quest: Science Prep</title>
+    <title>Biology Quest: UPSC & WBCS Interactive Prep</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
-            color: #f8fafc; /* Slate 50 */
+            background-color: #090d16;
+            color: #f8fafc;
             overflow-x: hidden;
         }
 
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #1e293b; 
+            background: #0f172a; 
         }
         ::-webkit-scrollbar-thumb {
-            background: #475569; 
+            background: #334155; 
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
+            background: #475569; 
         }
 
-        /* Animations */
         .fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
+            animation: fadeIn 0.35s ease-out forwards;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -50,22 +49,21 @@
         }
 
         .pulse-glow {
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); /* Green glow for Biology */
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.4);
             animation: pulseGlow 2s infinite;
         }
         @keyframes pulseGlow {
-            0% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
-            50% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.8); }
-            100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+            0% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 28px rgba(34, 197, 94, 0.75); }
+            100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
         }
 
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Canvas for confetti */
         #confetti-canvas {
             position: fixed;
             top: 0;
@@ -76,119 +74,253 @@
             z-index: 100;
         }
 
-        /* Game specific styles */
+        /* Drag and Drop and Mobile Tap Selection */
         .draggable-item {
             cursor: grab;
+            user-select: none;
+            touch-action: manipulation;
         }
         .draggable-item:active {
             cursor: grabbing;
+        }
+        .draggable-item.selected-item {
+            outline: 2px solid #22c55e;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
         }
         .drop-zone {
             transition: all 0.2s ease;
         }
         .drop-zone.drag-over {
-            background-color: rgba(34, 197, 94, 0.2);
+            background-color: rgba(34, 197, 94, 0.25);
             border-color: #22c55e;
+        }
+
+        /* Memory Card 3D Flip Styles */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative">
+<body class="min-h-screen flex flex-col relative selection:bg-green-500 selection:text-black">
     <canvas id="confetti-canvas"></canvas>
 
-    <header class="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-lg">
+    <!-- Header / Navbar -->
+    <header class="glass-panel sticky top-0 z-40 px-4 md:px-8 py-3.5 flex justify-between items-center shadow-2xl border-b border-slate-800">
         <div class="flex items-center gap-3">
-            <div class="bg-green-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
-                <i class="fa-solid fa-leaf"></i>
+            <div class="bg-gradient-to-br from-green-400 to-emerald-600 text-slate-950 p-2.5 rounded-xl font-extrabold text-xl shadow-lg">
+                <i class="fa-solid fa-dna"></i>
             </div>
             <div>
-                <h1 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">Biology Quest</h1>
-                <p class="text-xs text-slate-400 font-medium">UPSC / WBCS Prep - General Science</p>
+                <h1 class="text-xl md:text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400">Biology Quest</h1>
+                <p class="text-[11px] md:text-xs text-slate-400 font-medium">UPSC CSE / WBCS General Science Revision</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-full flex items-center gap-2 shadow-inner">
-                <i class="fa-solid fa-star text-green-400"></i>
-                <span id="global-score" class="font-bold text-lg">0</span>
-                <span class="text-xs text-slate-400 hidden sm:inline">XP</span>
+        <div class="flex items-center gap-3 md:gap-4">
+            <button onclick="toggleAudio()" id="audio-toggle-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-xl text-sm border border-slate-700 transition-colors" title="Toggle Sound Effects">
+                <i class="fa-solid fa-volume-high text-green-400"></i>
+            </button>
+            <div class="bg-slate-800/90 border border-slate-700 px-3.5 py-1.5 rounded-xl flex items-center gap-2 shadow-inner">
+                <i class="fa-solid fa-star text-amber-400 animate-pulse"></i>
+                <span id="global-score" class="font-bold text-base md:text-lg text-emerald-400">0</span>
+                <span class="text-xs text-slate-400 font-semibold hidden sm:inline">XP</span>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl hidden md:flex items-center gap-2">
+                <i class="fa-solid fa-fire text-orange-400"></i>
+                <span id="streak-counter" class="font-bold text-sm text-slate-200">0</span>
+                <span class="text-xs text-slate-400">Streak</span>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8 relative z-10 w-full max-w-5xl">
+    <main class="flex-grow container mx-auto px-4 py-6 md:py-8 relative z-10 w-full max-w-6xl">
         
-        <!-- Dashboard / Menu View -->
+        <!-- Menu / Game Dashboard View -->
         <div id="menu-view" class="fade-in">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Master Biological Sciences</h2>
-                <p class="text-slate-400 max-w-2xl mx-auto">Engage with interactive mini-games designed to reinforce cell biology, human diseases, and nutrition. Perfect for quick revisions.</p>
+            <div class="text-center mb-8 md:mb-10">
+                <span class="bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-500/20 uppercase tracking-wider">Interactive Revision Hub</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mt-3 mb-3 tracking-tight">Master Biological Sciences</h2>
+                <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">Engage with 7 high-yield interactive mini-games covering essential Cell Biology, Diseases, Physiology, Genetics, Taxonomy, and Ecology for civil service exams.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Game 1 Card -->
-                <button onclick="startGame('cellSorter')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)]">
-                    <div class="bg-purple-500/20 text-purple-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                        <i class="fa-solid fa-microscope"></i>
+            <!-- Game Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Game 1 -->
+                <button onclick="startGame('cellSorter')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-purple-500/20 text-purple-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-purple-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-microscope"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-purple-500/10 text-purple-300 px-2.5 py-1 rounded-md border border-purple-500/20">Drag & Match</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">1. Cell Organelle Sorter</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Match organelle names (Mitochondria, Lysosome, Ribosome) to their cellular mechanisms.</p>
                     </div>
-                    <h3 class="text-xl font-bold mb-2 text-slate-100">Cell Structure Sorter</h3>
-                    <p class="text-sm text-slate-400 mb-4">Match cell organelles (like Mitochondria, Ribosomes) to their primary functions.</p>
-                    <div class="flex items-center text-green-400 text-sm font-semibold">
-                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                    </div>
-                </button>
-
-                <!-- Game 2 Card -->
-                <button onclick="startGame('diseaseDetective')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)]">
-                    <div class="bg-red-500/20 text-red-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-red-500 group-hover:text-white transition-colors">
-                        <i class="fa-solid fa-viruses"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2 text-slate-100">Disease Detective</h3>
-                    <p class="text-sm text-slate-400 mb-4">Identify diseases based on their symptoms, vectors, or causative pathogens.</p>
-                    <div class="flex items-center text-green-400 text-sm font-semibold">
-                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </div>
                 </button>
 
-                <!-- Game 3 Card -->
-                <button onclick="startGame('vitaminVault')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)]">
-                    <div class="bg-yellow-500/20 text-yellow-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
-                        <i class="fa-solid fa-apple-whole"></i>
+                <!-- Game 2 -->
+                <button onclick="startGame('diseaseDetective')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-rose-500/20 text-rose-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-rose-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-viruses"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-rose-500/10 text-rose-300 px-2.5 py-1 rounded-md border border-rose-500/20">Clinical Cases</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">2. Disease Detective</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Diagnose human diseases, pathogens, and vectors from clinical clues and symptoms.</p>
                     </div>
-                    <h3 class="text-xl font-bold mb-2 text-slate-100">Vitamin Vault</h3>
-                    <p class="text-sm text-slate-400 mb-4">True or False: Verify the relationship between vitamins/minerals and their deficiency diseases.</p>
-                    <div class="flex items-center text-green-400 text-sm font-semibold">
-                        <span>Play Now</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 3 -->
+                <button onclick="startGame('vitaminVault')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-amber-500/20 text-amber-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-amber-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-apple-whole"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-amber-500/10 text-amber-300 px-2.5 py-1 rounded-md border border-amber-500/20">Speed True/False</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">3. Vitamin & Nutrition Vault</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Evaluate high-speed facts regarding deficiency syndromes, vitamins, and minerals.</p>
+                    </div>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 4 -->
+                <button onclick="startGame('endocrinePath')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-cyan-500/20 text-cyan-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-hand-holding-medical"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-cyan-500/10 text-cyan-300 px-2.5 py-1 rounded-md border border-cyan-500/20">Pathfinder</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">4. Endocrine Pathfinder</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Connect endocrine glands (Pituitary, Thyroid, Pancreas) with their hormones and target functions.</p>
+                    </div>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 5 -->
+                <button onclick="startGame('taxonomyClass')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-indigo-500/20 text-indigo-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-sitemap"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-500/20">Speed Sort</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">5. Kingdom & Taxonomy Sort</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Rapidly classify organisms into Monera, Protista, Fungi, Plantae, or Animalia kingdoms.</p>
+                    </div>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 6 -->
+                <button onclick="startGame('ecoPyramid')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-emerald-500/20 text-emerald-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-300 px-2.5 py-1 rounded-md border border-emerald-500/20">Sequence Hierarchy</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">6. Ecological Pyramid Weaver</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Order organisms into correct ecological trophic levels from Primary Producers to Apex Predators.</p>
+                    </div>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </button>
+
+                <!-- Game 7 -->
+                <button onclick="startGame('memoryFlip')" class="group text-left glass-panel rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:border-emerald-500/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] flex flex-col justify-between md:col-span-2 lg:col-span-1">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-pink-500/20 text-pink-400 w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:bg-pink-500 group-hover:text-white transition-all shadow-md">
+                                <i class="fa-solid fa-clone"></i>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase bg-pink-500/10 text-pink-300 px-2.5 py-1 rounded-md border border-pink-500/20">Memory Match</span>
+                        </div>
+                        <h3 class="text-lg font-bold mb-1.5 text-slate-100 group-hover:text-emerald-400 transition-colors">7. Bio-Memory Flip Blitz</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Test your memory memory matrix: flip and match plant hormones, enzymes, and specialized biology terms.</p>
+                    </div>
+                    <div class="flex items-center text-emerald-400 text-xs font-bold pt-3 border-t border-slate-800">
+                        <span>Play Challenge</span> <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </div>
                 </button>
             </div>
         </div>
 
-        <!-- Game Container (Hidden by default) -->
+        <!-- Active Game Container -->
         <div id="game-view" class="hidden fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-arrow-left"></i> Back to Menu
+            <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-800">
+                <button onclick="returnToMenu()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-semibold bg-slate-800/60 hover:bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700">
+                    <i class="fa-solid fa-arrow-left"></i> Menu
                 </button>
-                <div id="game-title" class="text-xl font-bold text-green-400">Game Title</div>
-                <div id="game-score-tracker" class="bg-slate-800 px-3 py-1 rounded-md text-sm font-semibold border border-slate-700">Score: 0</div>
+                <div id="game-title" class="text-lg md:text-xl font-extrabold text-emerald-400">Game Title</div>
+                <div id="game-score-tracker" class="bg-slate-800/80 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-bold border border-slate-700 text-slate-200">
+                    Session XP: <span id="game-xp-val" class="text-emerald-400">0</span>
+                </div>
             </div>
             
-            <!-- Dynamic Game Canvas where JS will inject UI -->
-            <div id="game-canvas" class="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center">
-                <!-- Content injected here -->
+            <!-- Dynamic Game Surface -->
+            <div id="game-canvas" class="glass-panel rounded-2xl p-4 md:p-8 min-h-[440px] flex flex-col items-center justify-center relative overflow-hidden">
+                <!-- Dynamic Content Injected Here -->
             </div>
         </div>
     </main>
 
-    <!-- Custom Modal for Alerts/Feedback -->
-    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-slate-900/80 backdrop-blur-sm">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
+    <!-- Feedback Modal -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modal-content">
             <div class="text-center">
-                <div id="modal-icon" class="text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-slate-700">
-                    <!-- Icon injected here -->
+                <div id="modal-icon" class="text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-slate-800">
+                    <!-- Icon injected dynamically -->
                 </div>
-                <h3 id="modal-title" class="text-2xl font-bold mb-2 text-white">Title</h3>
-                <p id="modal-message" class="text-slate-300 mb-6">Message goes here.</p>
-                <button onclick="closeModal()" id="modal-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors">
+                <h3 id="modal-title" class="text-2xl font-black mb-2 text-white">Title</h3>
+                <p id="modal-message" class="text-slate-300 text-sm md:text-base mb-6 leading-relaxed">Message goes here.</p>
+                <button onclick="closeModal()" id="modal-btn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wide">
                     Continue
                 </button>
             </div>
@@ -196,123 +328,230 @@
     </div>
 
     <script>
-        // --- DATA STRUCTURES ---
+        // --- DATASETS FOR UPSC / WBCS BIOLOGY ---
 
         const cellOrganellesData = [
-            { organelle: "Mitochondria", function: "Powerhouse of the cell; site of cellular respiration and ATP production." },
-            { organelle: "Ribosomes", function: "Site of protein synthesis; can be free-floating or attached to the ER." },
-            { organelle: "Nucleus", function: "Control center of the cell; contains genetic material (DNA)." },
-            { organelle: "Lysosomes", function: "Contains digestive enzymes; acts as the waste disposal system of the cell." },
-            { organelle: "Golgi Apparatus", function: "Modifies, sorts, and packages proteins and lipids for transport." },
-            { organelle: "Endoplasmic Reticulum (Rough)", function: "Studded with ribosomes; involved in the synthesis and transport of proteins." },
-            { organelle: "Chloroplast", function: "Site of photosynthesis in plant cells; contains chlorophyll." },
-            { organelle: "Cell Membrane", function: "Semi-permeable barrier that controls the movement of substances in and out of the cell." },
-            { organelle: "Vacuole", function: "Storage sac for water, nutrients, or waste; very large in plant cells." }
+            { organelle: "Mitochondria", function: "Site of aerobic respiration & ATP generation (Cell's Powerhouse)." },
+            { organelle: "Ribosomes", function: "Non-membrane bound organelles responsible for protein synthesis." },
+            { organelle: "Nucleus", function: "Encloses genetic material (DNA) and directs all cellular activities." },
+            { organelle: "Lysosomes", function: "Contains hydrolytic enzymes for intracellular digestion ('Suicidal bags')." },
+            { organelle: "Golgi Apparatus", function: "Packages, modifies, and secretes proteins and lipids." },
+            { organelle: "Rough ER", function: "Studded with ribosomes; synthesizes membrane & secretory proteins." },
+            { organelle: "Chloroplast", function: "Contains chlorophyll; converts light energy into glucose via photosynthesis." },
+            { organelle: "Cell Membrane", function: "Phospholipid bilayer regulating entry and exit of molecules." }
         ];
 
         const diseasesData = [
-            { disease: "Malaria", clue: "Caused by Plasmodium parasite, transmitted by the bite of an infected female Anopheles mosquito.", impact: "Pathogen: Protozoan" },
-            { disease: "Tuberculosis (TB)", clue: "A highly contagious bacterial infection that primarily affects the lungs, caused by Mycobacterium tuberculosis.", impact: "Pathogen: Bacteria" },
-            { disease: "Dengue", clue: "A viral infection transmitted by Aedes mosquitoes, often causing high fever, severe headache, and joint pain.", impact: "Pathogen: Virus" },
-            { disease: "Ringworm", clue: "A common skin infection that causes a red, itchy, circular rash, but despite its name, it's not caused by a worm.", impact: "Pathogen: Fungi" },
-            { disease: "Cholera", clue: "An acute diarrheal illness caused by infection of the intestine with Vibrio cholerae bacteria, often from contaminated water.", impact: "Pathogen: Bacteria" },
-            { disease: "Typhoid", clue: "Caused by Salmonella Typhi bacteria, spreads through contaminated food and water, symptoms include prolonged high fever.", impact: "Pathogen: Bacteria" },
-            { disease: "AIDS", clue: "A condition caused by HIV, which attacks the body's immune system, specifically CD4 cells.", impact: "Pathogen: Virus" },
-            { disease: "Kala-azar", clue: "Also known as Visceral leishmaniasis, caused by Leishmania parasites transmitted by sandflies.", impact: "Pathogen: Protozoan" }
+            { disease: "Malaria", clue: "Caused by Plasmodium, vector is female Anopheles mosquito. Attacks RBCs and Liver.", impact: "Pathogen: Protozoan | Vector: Anopheles Mosquito" },
+            { disease: "Tuberculosis", clue: "Bacterial respiratory disease caused by Mycobacterium tuberculosis; tested via Mantoux Test.", impact: "Pathogen: Bacteria | Diagnostic: Mantoux Test" },
+            { disease: "Dengue", clue: "Flavivirus transmitted by Aedes aegypti; leads to severe drop in blood platelet count.", impact: "Pathogen: Virus | Vector: Aedes Mosquito" },
+            { disease: "Ringworm", clue: "Contagious skin infection causing circular itchy lesions, caused by Microsporum or Trichophyton.", impact: "Pathogen: Fungi | Type: Dermatophyte" },
+            { disease: "Kala-Azar", clue: "Visceral Leishmaniasis caused by Leishmania donovani parasite; transmitted by Sandflies.", impact: "Pathogen: Protozoan | Vector: Sandfly" },
+            { disease: "Typhoid", clue: "Acute intestinal infection caused by Salmonella typhi; diagnosed using the Widal test.", impact: "Pathogen: Bacteria | Diagnostic: Widal Test" },
+            { disease: "Japanese Encephalitis", clue: "Viral brain infection transmitted by Culex mosquitoes, common in paddy field zones.", impact: "Pathogen: Virus | Vector: Culex Mosquito" }
         ];
 
         const vitaminsData = [
-            { statement: "Vitamin A deficiency primarily leads to Night Blindness and Xerophthalmia.", isTrue: true, explanation: "Correct. Vitamin A (Retinol) is crucial for vision and eye health." },
-            { statement: "Scurvy is caused by a severe deficiency of Vitamin D.", isTrue: false, explanation: "False. Scurvy is caused by a deficiency of Vitamin C (Ascorbic Acid). Vitamin D deficiency causes Rickets or Osteomalacia." },
-            { statement: "Vitamin K is essential for blood clotting; its deficiency can lead to excessive bleeding.", isTrue: true, explanation: "Correct. Vitamin K plays a vital role in synthesizing proteins needed for blood coagulation." },
-            { statement: "Beri-Beri is a disease caused by the deficiency of Vitamin B12.", isTrue: false, explanation: "False. Beri-Beri is caused by a deficiency of Vitamin B1 (Thiamine). Vitamin B12 deficiency leads to Pernicious anemia." },
-            { statement: "Iodine deficiency in the diet is the most common cause of Goiter (enlargement of the thyroid gland).", isTrue: true, explanation: "Correct. The thyroid gland needs iodine to produce thyroid hormones." },
-            { statement: "Pellagra is a disease characterized by the '4 Ds' (dermatitis, diarrhea, dementia, death) and is caused by Vitamin B3 (Niacin) deficiency.", isTrue: true, explanation: "Correct. Niacin is crucial for converting food into energy and maintaining healthy skin and nerves." },
-            { statement: "Iron deficiency is a leading cause of Kwashiorkor, a form of severe protein malnutrition.", isTrue: false, explanation: "False. Iron deficiency causes Anemia. Kwashiorkor is caused by a severe lack of protein in the diet." }
+            { statement: "Vitamin A (Retinol) deficiency primarily causes Xerophthalmia and Night Blindness.", isTrue: true, explanation: "Correct. Vitamin A forms rhodopsin pigment essential for rod vision in low light." },
+            { statement: "Scurvy is caused by severe dietary deficiency of Vitamin D.", isTrue: false, explanation: "False. Scurvy (bleeding gums) is caused by Vitamin C deficiency. Vitamin D deficiency causes Rickets/Osteomalacia." },
+            { statement: "Vitamin K (Phylloquinone) is indispensable for prothrombin synthesis and blood clotting.", isTrue: true, explanation: "Correct. Vitamin K deficiency leads to delayed blood coagulation and hemorrhaging." },
+            { statement: "Beri-Beri is caused by deficiency of Vitamin B12 (Cyanocobalamin).", isTrue: false, explanation: "False. Beri-Beri is caused by Vitamin B1 (Thiamine) deficiency. B12 deficiency leads to Pernicious Anemia." },
+            { statement: "Pellagra is characterized by the 3 Ds (Dermatitis, Diarrhea, Dementia) due to Vitamin B3 (Niacin) deficiency.", isTrue: true, explanation: "Correct. Niacin is essential for NAD/NADP coenzyme synthesis." },
+            { statement: "Cobalt is an essential trace element present in Vitamin B12.", isTrue: true, explanation: "Correct. Cyanocobalamin contains a central cobalt ion." }
         ];
 
-        // --- GLOBAL STATE ---
+        const endocrineData = [
+            { gland: "Pituitary Gland", hormone: "Growth Hormone (GH) / TSH", function: "Master gland located at brain base controlling other endocrine glands." },
+            { gland: "Thyroid Gland", hormone: "Thyroxine (T4) & Calcitonin", function: "Regulates Basal Metabolic Rate (BMR) and requires Iodine for synthesis." },
+            { gland: "Pancreas (Islets)", hormone: "Insulin & Glucagon", function: "Beta cells produce Insulin to lower blood glucose; Alpha cells produce Glucagon." },
+            { gland: "Adrenal Gland", hormone: "Adrenaline / Cortisol", function: "Secretes 'Emergency Hormone' regulating fight-or-flight response and blood pressure." },
+            { gland: "Parathyroid Gland", hormone: "Parathormone (PTH)", function: "Increases blood calcium levels by mobilizing calcium from bones." }
+        ];
+
+        const taxonomyData = [
+            { organism: "Amoeba", kingdom: "Protista", details: "Unicellular eukaryotic microorganism moving via pseudopodia." },
+            { organism: "Cyanobacteria (Blue-green algae)", kingdom: "Monera", details: "Prokaryotic autotrophic organism capable of nitrogen fixation." },
+            { organism: "Penicillium", kingdom: "Fungi", details: "Heterotrophic, multicellular saprophytic fungus yielding penicillin antibiotic." },
+            { organism: "Fern (Pteridophyte)", kingdom: "Plantae", details: "Vascular seedless plant reproducing via spores." },
+            { organism: "Hydra (Cnidaria)", kingdom: "Animalia", details: "Multicellular aquatic invertebrate displaying radial symmetry." },
+            { organism: "Euglena", kingdom: "Protista", details: "Mixotrophic unicellular eukaryote possessing flagella and chloroplasts." },
+            { organism: "Rhizobium", kingdom: "Monera", details: "Symbiotic nitrogen-fixing bacterium in root nodules of legumes." }
+        ];
+
+        const ecoPyramidData = [
+            {
+                title: "Forest Ecosystem Food Chain",
+                levels: [
+                    { position: 1, name: "Phytoplankton / Grass", tier: "Primary Producer" },
+                    { position: 2, name: "Grasshopper / Deer", tier: "Primary Consumer (Herbivore)" },
+                    { position: 3, name: "Frog / Jackal", tier: "Secondary Consumer (Carnivore)" },
+                    { position: 4, name: "Snake / Tiger", tier: "Tertiary / Apex Predator" }
+                ]
+            },
+            {
+                title: "Pond Ecosystem Energy Pyramid",
+                levels: [
+                    { position: 1, name: "Submerged Algae", tier: "Primary Producer" },
+                    { position: 2, name: "Zooplankton", tier: "Primary Consumer" },
+                    { position: 3, name: "Small Fishes", tier: "Secondary Consumer" },
+                    { position: 4, name: "Large Stork / Crane", tier: "Apex Consumer" }
+                ]
+            }
+        ];
+
+        const memoryPairsData = [
+            { term: "Auxin", match: "Apical Dominance in Plants" },
+            { term: "Gibberellin", match: "Stem Elongation & Seed Germination" },
+            { term: "Ethylene", match: "Gaseous Hormone for Fruit Ripening" },
+            { term: "Abscisic Acid (ABA)", match: "Plant Stress Hormone & Stomatal Closure" },
+            { term: "Pepsin", match: "Stomach Enzyme Digesting Proteins" },
+            { term: "Bile Juice", match: "Emulsification of Fats (Made in Liver)" }
+        ];
+
         let globalScore = 0;
         let currentGameScore = 0;
-        let currentActiveGame = null;
+        let streakCount = 0;
+        let audioEnabled = true;
 
-        // --- UTILITY FUNCTIONS ---
-        function shuffleArray(array) {
-            let curId = array.length;
-            while (0 !== curId) {
-                let randId = Math.floor(Math.random() * curId);
-                curId -= 1;
-                let tmp = array[curId];
-                array[curId] = array[randId];
-                array[randId] = tmp;
+        // Web Audio Synthesizer for retro game sound effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioEnabled || !audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'victory') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    osc.frequency.setValueAtTime(880, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'flip') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.05);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                }
+            } catch(e) {}
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audio-toggle-btn');
+            if (audioEnabled) {
+                btn.innerHTML = `<i class="fa-solid fa-volume-high text-green-400"></i>`;
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-volume-xmark text-slate-500"></i>`;
+            }
+        }
+
+        // --- CORE UTILITIES ---
+        function shuffleArray(arr) {
+            let array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
 
-        function showModal(title, message, type, onContinue = null) {
+        function updateScore(points) {
+            if (points > 0) {
+                streakCount++;
+                playSound('correct');
+            } else if (points < 0) {
+                streakCount = 0;
+                playSound('wrong');
+            }
+            
+            globalScore = Math.max(0, globalScore + points);
+            currentGameScore = Math.max(0, currentGameScore + points);
+
+            document.getElementById('global-score').textContent = globalScore;
+            document.getElementById('game-xp-val').textContent = currentGameScore;
+            document.getElementById('streak-counter').textContent = streakCount;
+        }
+
+        function showModal(title, message, type, callback = null) {
             const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
+            const content = document.getElementById('modal-content');
             const titleEl = document.getElementById('modal-title');
-            const messageEl = document.getElementById('modal-message');
+            const msgEl = document.getElementById('modal-message');
             const iconEl = document.getElementById('modal-icon');
             const btnEl = document.getElementById('modal-btn');
 
             titleEl.textContent = title;
-            messageEl.innerHTML = message;
+            msgEl.innerHTML = message;
 
             if (type === 'success') {
-                iconEl.innerHTML = '<i class="fa-solid fa-check text-green-400"></i>';
-                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-green-500/20';
-                btnEl.className = 'w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors';
+                iconEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`;
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-emerald-500/20 border border-emerald-500/30';
+                btnEl.className = 'w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-3.5 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wide';
             } else if (type === 'error') {
-                iconEl.innerHTML = '<i class="fa-solid fa-xmark text-red-400"></i>';
-                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-500/20';
-                btnEl.className = 'w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors';
+                iconEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400"></i>`;
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-rose-500/20 border border-rose-500/30';
+                btnEl.className = 'w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wide';
             } else {
-                iconEl.innerHTML = '<i class="fa-solid fa-info text-blue-400"></i>';
-                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-blue-500/20';
-                btnEl.className = 'w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors';
+                iconEl.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-400"></i>`;
+                iconEl.className = 'text-4xl mb-4 mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-amber-500/20 border border-amber-500/30';
+                btnEl.className = 'w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold py-3.5 rounded-xl transition-all shadow-lg text-sm uppercase tracking-wide';
             }
 
             modal.classList.remove('hidden');
             setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
             }, 10);
 
-            window.modalCallback = onContinue;
+            window.modalCallback = callback;
         }
 
         function closeModal() {
             const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
-            
-            modalContent.classList.remove('scale-100', 'opacity-100');
-            modalContent.classList.add('scale-95', 'opacity-0');
-            
+            const content = document.getElementById('modal-content');
+
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
             setTimeout(() => {
                 modal.classList.add('hidden');
                 if (window.modalCallback) {
                     window.modalCallback();
                     window.modalCallback = null;
                 }
-            }, 300);
-        }
-
-        function updateGlobalScore(points) {
-            globalScore += points;
-            const scoreEl = document.getElementById('global-score');
-            scoreEl.textContent = globalScore;
-            
-            scoreEl.classList.add('text-green-400', 'scale-125');
-            setTimeout(() => {
-                scoreEl.classList.remove('text-green-400', 'scale-125');
-            }, 300);
-        }
-
-        function updateGameScore(points) {
-            currentGameScore += points;
-            document.getElementById('game-score-tracker').textContent = `Score: ${currentGameScore}`;
+            }, 250);
         }
 
         function switchView(viewId) {
@@ -323,388 +562,699 @@
 
         function returnToMenu() {
             switchView('menu-view');
-            currentActiveGame = null;
             document.getElementById('game-canvas').innerHTML = '';
         }
 
-        function startGame(gameType) {
-            currentActiveGame = gameType;
+        function startGame(type) {
             currentGameScore = 0;
-            updateGameScore(0);
+            document.getElementById('game-xp-val').textContent = '0';
             switchView('game-view');
-            
+
             const canvas = document.getElementById('game-canvas');
-            canvas.innerHTML = ''; 
-            
-            if (gameType === 'cellSorter') {
-                document.getElementById('game-title').textContent = "Cell Structure Sorter";
-                initCellGame();
-            } else if (gameType === 'diseaseDetective') {
-                document.getElementById('game-title').textContent = "Disease Detective";
-                initDiseaseGame();
-            } else if (gameType === 'vitaminVault') {
-                document.getElementById('game-title').textContent = "Vitamin Vault";
-                initVitaminGame();
-            }
+            canvas.innerHTML = '';
+
+            const titles = {
+                cellSorter: "Cell Structure Sorter",
+                diseaseDetective: "Disease Detective",
+                vitaminVault: "Vitamin & Nutrition Vault",
+                endocrinePath: "Endocrine Pathfinder",
+                taxonomyClass: "Kingdom & Taxonomy Classifier",
+                ecoPyramid: "Ecological Pyramid Weaver",
+                memoryFlip: "Bio-Memory Flip Blitz"
+            };
+
+            document.getElementById('game-title').textContent = titles[type] || "Biology Challenge";
+
+            if (type === 'cellSorter') initCellGame();
+            else if (type === 'diseaseDetective') initDiseaseGame();
+            else if (type === 'vitaminVault') initVitaminGame();
+            else if (type === 'endocrinePath') initEndocrineGame();
+            else if (type === 'taxonomyClass') initTaxonomyGame();
+            else if (type === 'ecoPyramid') initPyramidGame();
+            else if (type === 'memoryFlip') initMemoryGame();
         }
 
-        // --- GAME 1: CELL STRUCTURE SORTER (Drag and Drop) ---
-        let currentOrganelles = [];
-        let organellesMatched = 0;
+        // --- GAME 1: CELL STRUCTURE SORTER ---
+        let cellMatchesNeeded = 0;
+        let selectedCellDragItem = null;
 
         function initCellGame() {
             const canvas = document.getElementById('game-canvas');
-            organellesMatched = 0;
+            const items = shuffleArray(cellOrganellesData).slice(0, 4);
+            const targets = shuffleArray(items);
+            cellMatchesNeeded = items.length;
 
-            const shuffledFull = shuffleArray([...cellOrganellesData]);
-            currentOrganelles = shuffledFull.slice(0, 4); // 4 pairs per round
+            let leftHTML = items.map(o => `
+                <div draggable="true" 
+                     ondragstart="handleCellDragStart(event)" 
+                     onclick="handleCellTapSelect(this)"
+                     id="cell-drag-${o.organelle.replace(/\s+/g, '')}" 
+                     data-organelle="${o.organelle}" 
+                     class="draggable-item bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 font-bold p-3.5 rounded-xl text-center shadow-md transition-all text-sm cursor-pointer flex items-center justify-center gap-2">
+                     <i class="fa-solid fa-atom text-purple-400"></i> ${o.organelle}
+                </div>
+            `).join('');
 
-            const functionsList = shuffleArray([...currentOrganelles]);
-
-            let organellesHTML = currentOrganelles.map(o => 
-                `<div draggable="true" ondragstart="drag(event)" id="drag-${o.organelle.replace(/\s+/g, '')}" data-organelle="${o.organelle}" class="draggable-item bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-100 font-bold py-3 px-4 rounded-lg shadow-md mb-3 text-center transition-colors">
-                    ${o.organelle}
-                </div>`
-            ).join('');
-
-            let functionsHTML = functionsList.map((f, index) => 
-                `<div class="flex items-center gap-4 mb-4">
-                    <div id="drop-${index}" ondrop="drop(event)" ondragover="allowDrop(event)" data-match="${f.organelle}" class="drop-zone w-36 h-16 border-2 border-dashed border-slate-600 rounded-lg flex flex-shrink-0 items-center justify-center bg-slate-800/50 text-slate-500 text-sm font-medium">
-                        Drop Here
+            let rightHTML = targets.map((t, idx) => `
+                <div class="flex items-center gap-3 mb-3.5">
+                    <div id="cell-drop-${idx}" 
+                         ondrop="handleCellDrop(event)" 
+                         ondragover="handleCellDragOver(event)" 
+                         onclick="handleCellTargetTap(this)"
+                         data-match="${t.organelle}" 
+                         class="drop-zone w-32 md:w-36 h-14 border-2 border-dashed border-slate-700 rounded-xl flex items-center justify-center bg-slate-900/60 text-slate-500 text-xs font-semibold shrink-0 cursor-pointer">
+                         Drop/Tap Here
                     </div>
-                    <div class="flex-1 bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-200 shadow-inner text-sm md:text-base">
-                        ${f.function}
+                    <div class="flex-1 bg-slate-900/80 border border-slate-800 p-3 rounded-xl text-slate-300 text-xs md:text-sm leading-snug">
+                        ${t.function}
                     </div>
-                </div>`
-            ).join('');
+                </div>
+            `).join('');
 
             canvas.innerHTML = `
-                <div class="w-full max-w-4xl flex flex-col h-full fade-in">
-                    <p class="text-center text-slate-400 mb-6">Drag the Organelle to its correct cellular function.</p>
+                <div class="w-full max-w-4xl fade-in">
+                    <p class="text-center text-slate-400 text-xs md:text-sm mb-6">Drag organelle or <span class="text-emerald-400 font-semibold">tap organelle then tap matching function box</span>.</p>
                     
-                    <div class="flex flex-col md:flex-row gap-8">
-                        <!-- Draggable Organelles (Bank) -->
-                        <div class="w-full md:w-1/3" id="organelle-bank">
-                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Organelles</h4>
-                            ${organellesHTML}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-3" id="organelle-source-list">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-purple-400 border-b border-purple-500/20 pb-2">Organelles</h4>
+                            ${leftHTML}
                         </div>
-                        
-                        <!-- Drop Zones (Functions) -->
-                        <div class="w-full md:w-2/3">
-                            <h4 class="text-slate-300 font-semibold mb-4 text-center border-b border-slate-700 pb-2">Functions</h4>
-                            ${functionsHTML}
+                        <div class="md:col-span-2 space-y-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 pb-2">Primary Functions</h4>
+                            ${rightHTML}
                         </div>
                     </div>
 
-                    <div class="mt-8 flex justify-center hidden w-full" id="cell-next-btn-container">
-                        <button onclick="initCellGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow">
-                            Next Round <i class="fa-solid fa-forward ml-2"></i>
+                    <div id="cell-next-btn-container" class="mt-6 flex justify-center hidden">
+                        <button onclick="initCellGame()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 px-8 rounded-full shadow-lg transition-all text-sm uppercase tracking-wider pulse-glow">
+                            Next Round <i class="fa-solid fa-arrow-right ml-2"></i>
                         </button>
                     </div>
                 </div>
             `;
         }
 
-        function allowDrop(ev) {
+        function handleCellDragStart(ev) {
+            ev.dataTransfer.setData("organelle", ev.target.dataset.organelle);
+            ev.dataTransfer.setData("elementId", ev.target.id);
+        }
+
+        function handleCellDragOver(ev) {
             ev.preventDefault();
             ev.currentTarget.classList.add('drag-over');
         }
 
-        function drag(ev) {
-            ev.dataTransfer.setData("text", ev.target.id);
-            ev.dataTransfer.setData("organelle", ev.target.dataset.organelle);
+        function handleCellTapSelect(el) {
+            document.querySelectorAll('.draggable-item').forEach(i => i.classList.remove('selected-item'));
+            selectedCellDragItem = el;
+            el.classList.add('selected-item');
         }
 
-        function drop(ev) {
+        function handleCellTargetTap(targetZone) {
+            if (!selectedCellDragItem) return;
+            checkCellMatch(selectedCellDragItem.dataset.organelle, selectedCellDragItem.id, targetZone);
+            selectedCellDragItem = null;
+            document.querySelectorAll('.draggable-item').forEach(i => i.classList.remove('selected-item'));
+        }
+
+        function handleCellDrop(ev) {
             ev.preventDefault();
-            const targetDropZone = ev.currentTarget;
-            targetDropZone.classList.remove('drag-over');
+            const targetZone = ev.currentTarget;
+            targetZone.classList.remove('drag-over');
+            const organelle = ev.dataTransfer.getData("organelle");
+            const elementId = ev.dataTransfer.getData("elementId");
+            checkCellMatch(organelle, elementId, targetZone);
+        }
 
-            if (targetDropZone.children.length > 0 && !targetDropZone.textContent.includes('Drop Here')) {
-                return;
-            }
+        function checkCellMatch(organelle, elementId, targetZone) {
+            const required = targetZone.dataset.match;
+            if (targetZone.dataset.completed) return;
 
-            const dataId = ev.dataTransfer.getData("text");
-            const draggedOrganelle = ev.dataTransfer.getData("organelle");
-            const requiredOrganelle = targetDropZone.dataset.match;
-            const draggedElement = document.getElementById(dataId);
+            if (organelle === required) {
+                const elem = document.getElementById(elementId);
+                targetZone.innerHTML = `<span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-check"></i> ${organelle}</span>`;
+                targetZone.classList.remove('border-dashed', 'border-slate-700');
+                targetZone.classList.add('border-emerald-500/60', 'bg-emerald-500/10');
+                targetZone.dataset.completed = "true";
+                if (elem) elem.style.visibility = 'hidden';
 
-            if (draggedOrganelle === requiredOrganelle) {
-                // Correct match
-                targetDropZone.innerHTML = '';
-                draggedElement.className = "w-full h-full flex items-center justify-center bg-green-500/20 border-2 border-green-500 text-green-100 font-bold rounded-lg shadow-md cursor-default text-xs md:text-sm";
-                draggedElement.draggable = false;
-                
-                targetDropZone.appendChild(draggedElement);
-                targetDropZone.classList.remove('border-dashed', 'border-slate-600');
-                targetDropZone.classList.add('border-none');
+                updateScore(25);
+                cellMatchesNeeded--;
 
-                updateGameScore(20);
-                updateGlobalScore(20);
-                organellesMatched++;
-
-                if (organellesMatched === 4) {
+                if (cellMatchesNeeded === 0) {
                     triggerConfetti();
-                    updateGlobalScore(50); // bonus
+                    updateScore(50); // Round Bonus
                     document.getElementById('cell-next-btn-container').classList.remove('hidden');
-                    showModal("Microscopic Mastery!", "You correctly sorted the organelles. +50 Bonus XP", "success");
+                    playSound('victory');
+                    showModal("Microscopic Mastery!", "All organelles were correctly mapped! +50 Bonus XP", "success");
                 }
             } else {
-                // Incorrect match
-                targetDropZone.classList.add('shake', 'bg-red-500/20', 'border-red-500');
-                updateGameScore(-5);
-                setTimeout(() => {
-                    targetDropZone.classList.remove('shake', 'bg-red-500/20', 'border-red-500');
-                }, 500);
+                updateScore(-10);
+                targetZone.classList.add('shake', 'border-rose-500');
+                setTimeout(() => targetZone.classList.remove('shake', 'border-rose-500'), 500);
             }
         }
 
-        document.addEventListener('dragleave', function(event) {
-            if (event.target.classList && event.target.classList.contains('drop-zone')) {
-                event.target.classList.remove('drag-over');
-            }
-        });
-
-        // --- GAME 2: DISEASE DETECTIVE (Multiple Choice) ---
-        let currentDiseaseSet = [];
-        let currentDiseaseIndex = 0;
+        // --- GAME 2: DISEASE DETECTIVE ---
+        let diseaseIndex = 0;
+        let diseaseQueue = [];
 
         function initDiseaseGame() {
-            const canvas = document.getElementById('game-canvas');
-            currentDiseaseSet = shuffleArray([...diseasesData]).slice(0, 5);
-            currentDiseaseIndex = 0;
-
-            canvas.innerHTML = `
-                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
-                    <div class="flex justify-between items-center w-full mb-4 text-sm text-slate-400 font-medium">
-                        <span>Case <span id="disease-current-num">1</span>/5</span>
-                        <span>Identify the Disease</span>
-                    </div>
-
-                    <div class="bg-slate-800 rounded-2xl p-6 md:p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[180px] flex flex-col items-center justify-center text-center relative" id="disease-card">
-                        <div class="text-red-400 text-3xl mb-4"><i class="fa-solid fa-stethoscope"></i></div>
-                        <p class="text-lg md:text-xl text-slate-100 font-medium italic" id="disease-clue">Loading case file...</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full" id="disease-options">
-                        <!-- Options injected here -->
-                    </div>
-
-                    <div class="mt-8 flex justify-center hidden w-full" id="disease-next-btn-container">
-                        <button onclick="initDiseaseGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md">
-                            Analyze Next Batch
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            displayCurrentDisease();
+            diseaseQueue = shuffleArray(diseasesData).slice(0, 5);
+            diseaseIndex = 0;
+            renderDiseaseQuestion();
         }
 
-        function displayCurrentDisease() {
-            if (currentDiseaseIndex >= currentDiseaseSet.length) {
-                document.getElementById('disease-card').innerHTML = `<div class="text-green-400 text-5xl mb-4"><i class="fa-solid fa-user-doctor"></i></div><p class="text-2xl text-white font-bold">Diagnosis Complete!</p>`;
-                document.getElementById('disease-options').innerHTML = '';
-                document.getElementById('disease-next-btn-container').classList.remove('hidden');
+        function renderDiseaseQuestion() {
+            const canvas = document.getElementById('game-canvas');
+            if (diseaseIndex >= diseaseQueue.length) {
                 triggerConfetti();
-                updateGlobalScore(40);
+                playSound('victory');
+                canvas.innerHTML = `
+                    <div class="text-center p-6 fade-in">
+                        <div class="w-20 h-20 mx-auto bg-rose-500/20 text-rose-400 rounded-3xl flex items-center justify-center text-4xl mb-4 border border-rose-500/30">
+                            <i class="fa-solid fa-user-doctor"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-2">Diagnostic Cases Completed!</h3>
+                        <p class="text-slate-400 text-sm mb-6 max-w-md mx-auto">You successfully analyzed all clinical case files for vector & pathogen pathogens.</p>
+                        <button onclick="initDiseaseGame()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-8 rounded-full transition-all shadow-lg text-sm uppercase tracking-wider pulse-glow">
+                            Start Next Case Set
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
-            const currentData = currentDiseaseSet[currentDiseaseIndex];
-            document.getElementById('disease-clue').textContent = `"${currentData.clue}"`;
-            document.getElementById('disease-current-num').textContent = currentDiseaseIndex + 1;
-
-            let distractors = diseasesData.filter(d => d.disease !== currentData.disease);
+            const current = diseaseQueue[diseaseIndex];
+            let distractors = diseasesData.filter(d => d.disease !== current.disease);
             distractors = shuffleArray(distractors).slice(0, 3);
-            
-            let options = [currentData, ...distractors];
-            options = shuffleArray(options);
+            let options = shuffleArray([current, ...distractors]);
 
-            const optionsContainer = document.getElementById('disease-options');
-            optionsContainer.innerHTML = '';
-            
-            const card = document.getElementById('disease-card');
-            card.classList.remove('fade-in');
-            void card.offsetWidth;
-            card.classList.add('fade-in');
+            let optionsHTML = options.map(opt => `
+                <button onclick="handleDiseaseAnswer('${opt.disease}', '${current.disease}')" 
+                        class="disease-opt-btn bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-rose-500/50 p-4 rounded-xl text-left font-semibold text-slate-200 transition-all flex items-center justify-between group text-sm shadow-md">
+                    <span>${opt.disease}</span>
+                    <i class="fa-solid fa-circle-chevron-right text-slate-600 group-hover:text-rose-400 transition-colors"></i>
+                </button>
+            `).join('');
 
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-red-500 font-semibold py-4 px-6 rounded-xl transition-all shadow-sm text-left flex items-center justify-between group';
-                btn.innerHTML = `<span>${opt.disease}</span> <i class="fa-solid fa-virus text-slate-500 group-hover:text-red-400 transition-colors"></i>`;
-                btn.onclick = () => handleDiseaseAnswer(opt.disease, currentData.disease, btn);
-                optionsContainer.appendChild(btn);
-            });
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl fade-in">
+                    <div class="flex justify-between items-center text-xs text-slate-400 mb-4 font-semibold uppercase tracking-wider">
+                        <span>Case File #${diseaseIndex + 1} of ${diseaseQueue.length}</span>
+                        <span class="text-rose-400"><i class="fa-solid fa-virus"></i> Clinical Diagnostics</span>
+                    </div>
+
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 mb-6 shadow-xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 text-rose-500/10 text-7xl"><i class="fa-solid fa-clipboard-user"></i></div>
+                        <h4 class="text-xs uppercase text-rose-400 font-bold tracking-wider mb-2">Symptom & Vector Clue:</h4>
+                        <p class="text-base md:text-lg text-slate-100 font-medium leading-relaxed italic relative z-10">
+                            "${current.clue}"
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        ${optionsHTML}
+                    </div>
+                </div>
+            `;
         }
 
-        function handleDiseaseAnswer(selected, correct, btnElement) {
-            const buttons = document.getElementById('disease-options').querySelectorAll('button');
-            buttons.forEach(b => b.disabled = true);
+        function handleDiseaseAnswer(selected, correct) {
+            const btns = document.querySelectorAll('.disease-opt-btn');
+            btns.forEach(b => b.disabled = true);
 
-            const currentData = currentDiseaseSet[currentDiseaseIndex];
+            const current = diseaseQueue[diseaseIndex];
 
             if (selected === correct) {
-                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
-                btnElement.classList.add('border-green-500', 'bg-green-500/20', 'text-green-100');
-                updateGameScore(20);
-                updateGlobalScore(20);
-                
-                setTimeout(() => {
-                    showModal("Correct Diagnosis!", `Fact: ${currentData.impact}`, "success", () => {
-                        currentDiseaseIndex++;
-                        displayCurrentDisease();
-                    });
-                }, 400);
-
-            } else {
-                btnElement.classList.remove('border-slate-600', 'bg-slate-800');
-                btnElement.classList.add('border-red-500', 'bg-red-500/20', 'text-red-100', 'shake');
-                
-                buttons.forEach(b => {
-                    if(b.textContent.trim().includes(correct)) {
-                         b.classList.remove('border-slate-600');
-                         b.classList.add('border-green-500', 'text-green-400');
-                    }
+                updateScore(20);
+                showModal("Correct Diagnosis!", `<strong>Key Exam Fact:</strong><br>${current.impact}`, "success", () => {
+                    diseaseIndex++;
+                    renderDiseaseQuestion();
                 });
-
-                updateGameScore(-5);
-                
-                setTimeout(() => {
-                    showModal("Misdiagnosis", `The correct answer was ${correct}.<br><br>Fact: ${currentData.impact}`, "error", () => {
-                        currentDiseaseIndex++;
-                        displayCurrentDisease();
-                    });
-                }, 800);
+            } else {
+                updateScore(-10);
+                showModal("Misdiagnosis!", `Correct Disease: <strong>${correct}</strong><br><br><strong>Note:</strong> ${current.impact}`, "error", () => {
+                    diseaseIndex++;
+                    renderDiseaseQuestion();
+                });
             }
         }
 
-        // --- GAME 3: VITAMIN VAULT (True/False) ---
-        let currentVitaminSet = [];
-        let currentVitaminIndex = 0;
+        // --- GAME 3: VITAMIN & NUTRITION VAULT ---
+        let vitaminIndex = 0;
+        let vitaminQueue = [];
 
         function initVitaminGame() {
+            vitaminQueue = shuffleArray(vitaminsData).slice(0, 5);
+            vitaminIndex = 0;
+            renderVitaminQuestion();
+        }
+
+        function renderVitaminQuestion() {
             const canvas = document.getElementById('game-canvas');
-            
-            currentVitaminSet = shuffleArray([...vitaminsData]).slice(0, 5);
-            currentVitaminIndex = 0;
+            if (vitaminIndex >= vitaminQueue.length) {
+                triggerConfetti();
+                playSound('victory');
+                canvas.innerHTML = `
+                    <div class="text-center p-6 fade-in">
+                        <div class="w-20 h-20 mx-auto bg-amber-500/20 text-amber-400 rounded-3xl flex items-center justify-center text-4xl mb-4 border border-amber-500/30">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-2">Nutritional Vault Cleared!</h3>
+                        <p class="text-slate-400 text-sm mb-6 max-w-md mx-auto">You verified all clinical nutritional facts and deficiency diseases.</p>
+                        <button onclick="initVitaminGame()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-8 rounded-full transition-all shadow-lg text-sm uppercase tracking-wider pulse-glow">
+                            Play Next Batch
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const current = vitaminQueue[vitaminIndex];
 
             canvas.innerHTML = `
-                <div class="w-full max-w-2xl flex flex-col h-full fade-in items-center">
-                    <div class="flex justify-between items-center w-full mb-6 text-sm text-slate-400 font-medium">
-                        <span>Statement <span id="vit-current-num">1</span> of 5</span>
-                        <span>True or False</span>
+                <div class="w-full max-w-xl fade-in text-center">
+                    <div class="text-xs text-amber-400 font-bold uppercase tracking-wider mb-2">Fact Assessment #${vitaminIndex + 1} / 5</div>
+                    
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 md:p-8 mb-8 shadow-xl relative min-h-[160px] flex items-center justify-center">
+                        <p class="text-base md:text-lg text-slate-100 font-semibold leading-relaxed">
+                            "${current.statement}"
+                        </p>
                     </div>
 
-                    <div class="bg-slate-800 rounded-2xl p-8 mb-8 border border-slate-700 shadow-lg w-full min-h-[160px] flex items-center justify-center text-center relative overflow-hidden" id="vit-card">
-                        <div class="absolute top-0 left-0 p-4 text-yellow-500/10">
-                            <i class="fa-solid fa-flask text-8xl"></i>
-                        </div>
-                        <p class="text-lg md:text-xl text-slate-100 font-semibold relative z-10 leading-relaxed" id="vit-statement">Loading...</p>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6 w-full max-w-md" id="vit-controls">
-                        <button onclick="handleVitaminAnswer(true)" class="bg-green-500/10 hover:bg-green-500/30 text-green-300 hover:text-white border border-green-500/30 hover:border-green-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
-                            <i class="fa-solid fa-check text-2xl"></i> TRUE
+                    <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                        <button onclick="handleVitaminAnswer(true)" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-black py-4 px-6 rounded-2xl transition-all flex flex-col items-center gap-1.5 shadow-lg group">
+                            <i class="fa-solid fa-check text-2xl group-hover:scale-125 transition-transform"></i>
+                            <span class="text-sm">TRUE</span>
                         </button>
-                        <button onclick="handleVitaminAnswer(false)" class="bg-red-500/10 hover:bg-red-500/30 text-red-300 hover:text-white border border-red-500/30 hover:border-red-400 font-bold py-4 px-6 rounded-xl transition-all shadow-md text-lg flex flex-col items-center gap-2">
-                            <i class="fa-solid fa-xmark text-2xl"></i> FALSE
-                        </button>
-                    </div>
-
-                    <div class="mt-8 flex justify-center hidden w-full" id="vit-next-btn-container">
-                        <button onclick="initVitaminGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-colors pulse-glow w-full max-w-md text-lg">
-                            Evaluate Next Set
+                        <button onclick="handleVitaminAnswer(false)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/40 font-black py-4 px-6 rounded-2xl transition-all flex flex-col items-center gap-1.5 shadow-lg group">
+                            <i class="fa-solid fa-xmark text-2xl group-hover:scale-125 transition-transform"></i>
+                            <span class="text-sm">FALSE</span>
                         </button>
                     </div>
                 </div>
             `;
-            
-            displayCurrentVitamin();
         }
 
-        function displayCurrentVitamin() {
-            if (currentVitaminIndex < currentVitaminSet.length) {
-                const vit = currentVitaminSet[currentVitaminIndex];
-                const statementEl = document.getElementById('vit-statement');
-                const cardEl = document.getElementById('vit-card');
-                
-                cardEl.classList.remove('fade-in');
-                void cardEl.offsetWidth; 
-                cardEl.classList.add('fade-in');
-                
-                statementEl.textContent = vit.statement;
-                document.getElementById('vit-current-num').textContent = currentVitaminIndex + 1;
+        function handleVitaminAnswer(ans) {
+            const current = vitaminQueue[vitaminIndex];
+            if (ans === current.isTrue) {
+                updateScore(20);
+                showModal("Fact Verified!", current.explanation, "success", () => {
+                    vitaminIndex++;
+                    renderVitaminQuestion();
+                });
             } else {
-                document.getElementById('vit-card').innerHTML = `<p class="text-2xl text-green-400 font-bold">Nutrition Expert!</p>`;
-                document.getElementById('vit-controls').classList.add('hidden');
-                document.getElementById('vit-next-btn-container').classList.remove('hidden');
-                triggerConfetti();
-                updateGlobalScore(30);
+                updateScore(-10);
+                showModal("Correction Needed", current.explanation, "error", () => {
+                    vitaminIndex++;
+                    renderVitaminQuestion();
+                });
             }
         }
 
-        function handleVitaminAnswer(userAnswer) {
-            const vit = currentVitaminSet[currentVitaminIndex];
-            
-            if (userAnswer === vit.isTrue) {
-                updateGameScore(20);
-                updateGlobalScore(20);
-                showModal("Fact Confirmed!", vit.explanation, "success", () => {
-                    currentVitaminIndex++;
-                    displayCurrentVitamin();
+        // --- GAME 4: ENDOCRINE PATHFINDER ---
+        let endocrineItems = [];
+        let endocrineIndex = 0;
+
+        function initEndocrineGame() {
+            endocrineItems = shuffleArray(endocrineData);
+            endocrineIndex = 0;
+            renderEndocrineStep();
+        }
+
+        function renderEndocrineStep() {
+            const canvas = document.getElementById('game-canvas');
+            if (endocrineIndex >= endocrineItems.length) {
+                triggerConfetti();
+                playSound('victory');
+                canvas.innerHTML = `
+                    <div class="text-center p-6 fade-in">
+                        <div class="w-20 h-20 mx-auto bg-cyan-500/20 text-cyan-400 rounded-3xl flex items-center justify-center text-4xl mb-4 border border-cyan-500/30">
+                            <i class="fa-solid fa-dna"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-2">Endocrine Map Complete!</h3>
+                        <p class="text-slate-400 text-sm mb-6 max-w-md mx-auto">You correctly paired human endocrine glands with their respective hormones and physiological functions.</p>
+                        <button onclick="initEndocrineGame()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-8 rounded-full transition-all shadow-lg text-sm uppercase tracking-wider pulse-glow">
+                            Replay Pathfinder
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const current = endocrineItems[endocrineIndex];
+            let allHormones = shuffleArray(endocrineData.map(e => e.hormone));
+
+            let hormoneBtnsHTML = allHormones.map(h => `
+                <button onclick="handleEndocrineAnswer('${h}', '${current.hormone}')" 
+                        class="bg-slate-900 hover:bg-cyan-950/40 border border-slate-700 hover:border-cyan-500/60 text-slate-200 font-semibold p-3.5 rounded-xl text-xs md:text-sm transition-all shadow-md">
+                    <i class="fa-solid fa-flask text-cyan-400 mr-2"></i> ${h}
+                </button>
+            `).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl fade-in text-center">
+                    <div class="text-xs text-cyan-400 font-bold uppercase tracking-wider mb-2">Gland Target #${endocrineIndex + 1} / ${endocrineItems.length}</div>
+                    
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 mb-6 shadow-xl">
+                        <div class="text-3xl text-cyan-400 mb-2"><i class="fa-solid fa-capsules"></i></div>
+                        <h3 class="text-xl font-bold text-white mb-1">${current.gland}</h3>
+                        <p class="text-xs md:text-sm text-slate-400">${current.function}</p>
+                    </div>
+
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Select the Primary Secreted Hormone:</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${hormoneBtnsHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleEndocrineAnswer(selected, correct) {
+            const current = endocrineItems[endocrineIndex];
+            if (selected === correct) {
+                updateScore(20);
+                showModal("Pathfinder Match!", `Correct! <strong>${current.gland}</strong> secretes <strong>${correct}</strong>.<br><br><em>${current.function}</em>`, "success", () => {
+                    endocrineIndex++;
+                    renderEndocrineStep();
                 });
             } else {
-                updateGameScore(-10);
-                showModal("Correction Required", vit.explanation, "error", () => {
-                    currentVitaminIndex++;
-                    displayCurrentVitamin();
+                updateScore(-10);
+                showModal("Incorrect Hormone", `The hormone secreted by <strong>${current.gland}</strong> is <strong>${correct}</strong>.`, "error", () => {
+                    endocrineIndex++;
+                    renderEndocrineStep();
                 });
+            }
+        }
+
+        // --- GAME 5: TAXONOMY CLASSIFIER ---
+        let taxonomyQueue = [];
+        let taxonomyIndex = 0;
+
+        function initTaxonomyGame() {
+            taxonomyQueue = shuffleArray(taxonomyData);
+            taxonomyIndex = 0;
+            renderTaxonomyStep();
+        }
+
+        function renderTaxonomyStep() {
+            const canvas = document.getElementById('game-canvas');
+            if (taxonomyIndex >= taxonomyQueue.length) {
+                triggerConfetti();
+                playSound('victory');
+                canvas.innerHTML = `
+                    <div class="text-center p-6 fade-in">
+                        <div class="w-20 h-20 mx-auto bg-indigo-500/20 text-indigo-400 rounded-3xl flex items-center justify-center text-4xl mb-4 border border-indigo-500/30">
+                            <i class="fa-solid fa-tree"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-2">Taxonomic Master!</h3>
+                        <p class="text-slate-400 text-sm mb-6 max-w-md mx-auto">You successfully classified diverse organisms into the 5 Kingdom Biological System.</p>
+                        <button onclick="initTaxonomyGame()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-8 rounded-full transition-all shadow-lg text-sm uppercase tracking-wider pulse-glow">
+                            Play Again
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const current = taxonomyQueue[taxonomyIndex];
+            const kingdoms = ["Monera", "Protista", "Fungi", "Plantae", "Animalia"];
+
+            let kingdomBtns = kingdoms.map(k => `
+                <button onclick="handleTaxonomyAnswer('${k}', '${current.kingdom}')" 
+                        class="bg-slate-900 hover:bg-indigo-950/50 border border-slate-700 hover:border-indigo-500 font-bold p-3.5 rounded-xl text-slate-200 text-xs md:text-sm transition-all shadow-md">
+                    ${k}
+                </button>
+            `).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-xl fade-in text-center">
+                    <div class="text-xs text-indigo-400 font-bold uppercase tracking-wider mb-2">Organism #${taxonomyIndex + 1} / ${taxonomyQueue.length}</div>
+                    
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 mb-6 shadow-xl">
+                        <div class="text-4xl text-indigo-400 mb-3"><i class="fa-solid fa-bug"></i></div>
+                        <h3 class="text-2xl font-black text-white mb-2">${current.organism}</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">${current.details}</p>
+                    </div>
+
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Assign to Kingdom:</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        ${kingdomBtns}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleTaxonomyAnswer(selected, correct) {
+            const current = taxonomyQueue[taxonomyIndex];
+            if (selected === correct) {
+                updateScore(20);
+                showModal("Taxonomic Accuracy!", `Correct! <strong>${current.organism}</strong> belongs to Kingdom <strong>${correct}</strong>.<br><br><em>${current.details}</em>`, "success", () => {
+                    taxonomyIndex++;
+                    renderTaxonomyStep();
+                });
+            } else {
+                updateScore(-10);
+                showModal("Classification Error", `<strong>${current.organism}</strong> belongs to Kingdom <strong>${correct}</strong>.`, "error", () => {
+                    taxonomyIndex++;
+                    renderTaxonomyStep();
+                });
+            }
+        }
+
+        // --- GAME 6: ECOLOGICAL PYRAMID WEAVER ---
+        let pyramidData = null;
+        let userPyramidOrder = [];
+
+        function initPyramidGame() {
+            const set = ecoPyramidData[Math.floor(Math.random() * ecoPyramidData.length)];
+            pyramidData = set;
+            userPyramidOrder = [];
+            renderPyramidGame();
+        }
+
+        function renderPyramidGame() {
+            const canvas = document.getElementById('game-canvas');
+            let shuffledLevels = shuffleArray(pyramidData.levels);
+
+            let optionsHTML = shuffledLevels.map(lvl => `
+                <button onclick="selectPyramidItem(${lvl.position}, '${lvl.name}', '${lvl.tier}')" 
+                        id="pyramid-opt-${lvl.position}"
+                        class="bg-slate-900 hover:bg-emerald-950/40 border border-slate-700 hover:border-emerald-500/60 p-3.5 rounded-xl text-left text-xs md:text-sm font-semibold text-slate-200 transition-all flex justify-between items-center shadow-md">
+                    <span>${lvl.name}</span>
+                    <span class="text-[10px] text-slate-500 font-normal">(${lvl.tier})</span>
+                </button>
+            `).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-2xl fade-in">
+                    <div class="text-center mb-6">
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Trophic Hierarchy Builder</span>
+                        <h3 class="text-xl font-bold text-white mt-1">${pyramidData.title}</h3>
+                        <p class="text-xs text-slate-400 mt-1">Click/Tap organisms in sequence from <strong class="text-emerald-400">Bottom (Producer)</strong> to <strong class="text-emerald-400">Top (Apex)</strong>.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-800 pb-2">Available Organisms:</h4>
+                            <div class="space-y-2.5" id="pyramid-pool">
+                                ${optionsHTML}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-bold uppercase text-emerald-400 mb-3 border-b border-slate-800 pb-2">Your Constructed Pyramid:</h4>
+                            <div class="space-y-2 flex flex-col-reverse" id="pyramid-stack">
+                                <div class="text-center py-8 text-xs text-slate-600 border-2 border-dashed border-slate-800 rounded-xl">
+                                    Stack will build here from bottom up
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-center gap-3">
+                        <button onclick="checkPyramidOrder()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 px-8 rounded-full text-xs uppercase tracking-wider shadow-lg">
+                            Verify Ecosystem
+                        </button>
+                        <button onclick="initPyramidGame()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-6 rounded-full text-xs uppercase tracking-wider border border-slate-700">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectPyramidItem(pos, name, tier) {
+            if (userPyramidOrder.some(item => item.pos === pos)) return;
+
+            userPyramidOrder.push({ pos, name, tier });
+            document.getElementById(`pyramid-opt-${pos}`).classList.add('opacity-40', 'pointer-events-none');
+
+            const stack = document.getElementById('pyramid-stack');
+            if (userPyramidOrder.length === 1) stack.innerHTML = '';
+
+            const levelBox = document.createElement('div');
+            levelBox.className = 'bg-emerald-500/10 border border-emerald-500/40 p-3 rounded-xl text-emerald-300 text-xs font-bold flex justify-between items-center fade-in';
+            levelBox.innerHTML = `<span>Lvl ${userPyramidOrder.length}: ${name}</span> <span class="text-[10px] text-emerald-400/70">(${tier})</span>`;
+            stack.appendChild(levelBox);
+            playSound('flip');
+        }
+
+        function checkPyramidOrder() {
+            if (userPyramidOrder.length < pyramidData.levels.length) {
+                showModal("Incomplete Pyramid", "Please select all levels before validating.", "info");
+                return;
+            }
+
+            let isCorrect = true;
+            for (let i = 0; i < userPyramidOrder.length; i++) {
+                if (userPyramidOrder[i].pos !== i + 1) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            if (isCorrect) {
+                triggerConfetti();
+                playSound('victory');
+                updateScore(50);
+                showModal("Ecosystem Balanced!", "You successfully constructed the trophic pyramid hierarchy in precise sequence! +50 XP", "success", () => {
+                    initPyramidGame();
+                });
+            } else {
+                updateScore(-15);
+                showModal("Ecological Collapse", "The trophic levels were out of order. Primary Producers must form the base level.", "error", () => {
+                    initPyramidGame();
+                });
+            }
+        }
+
+        // --- GAME 7: BIO-MEMORY FLIP BLITZ ---
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairsCount = 0;
+
+        function initMemoryGame() {
+            const canvas = document.getElementById('game-canvas');
+            const selectedPairs = shuffleArray(memoryPairsData).slice(0, 4); // 4 pairs = 8 cards
+            
+            let cardDeck = [];
+            selectedPairs.forEach((p, index) => {
+                cardDeck.push({ id: index, text: p.term, type: 'term' });
+                cardDeck.push({ id: index, text: p.match, type: 'match' });
+            });
+
+            memoryCards = shuffleArray(cardDeck);
+            flippedCards = [];
+            matchedPairsCount = 0;
+
+            let cardsHTML = memoryCards.map((c, idx) => `
+                <div class="flip-card h-24 md:h-28 cursor-pointer" onclick="flipMemoryCard(${idx})">
+                    <div class="flip-card-inner" id="mem-card-${idx}">
+                        <div class="flip-card-front bg-slate-900 border border-slate-700/80 hover:border-pink-500/50 text-pink-400 font-extrabold text-xl shadow-lg">
+                            <i class="fa-solid fa-dna"></i>
+                        </div>
+                        <div class="flip-card-back bg-pink-950/60 border border-pink-500/60 text-slate-100 font-bold text-xs md:text-sm shadow-xl p-2 flex items-center justify-center">
+                            ${c.text}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-3xl fade-in">
+                    <div class="text-center mb-5">
+                        <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">Memory Match Matrix</span>
+                        <h3 class="text-lg font-bold text-white mt-1">Plant Hormones & Biological Enzymes</h3>
+                        <p class="text-xs text-slate-400 mt-1">Flip cards to pair terms with their exact metabolic functions.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                        ${cardsHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        function flipMemoryCard(index) {
+            const cardEl = document.getElementById(`mem-card-${index}`).parentElement;
+            if (cardEl.classList.contains('flipped') || flippedCards.length >= 2) return;
+
+            cardEl.classList.add('flipped');
+            playSound('flip');
+            flippedCards.push({ index, card: memoryCards[index] });
+
+            if (flippedCards.length === 2) {
+                const [first, second] = flippedCards;
+                if (first.card.id === second.card.id) {
+                    // Match found!
+                    matchedPairsCount++;
+                    updateScore(25);
+                    flippedCards = [];
+
+                    if (matchedPairsCount === 4) {
+                        setTimeout(() => {
+                            triggerConfetti();
+                            playSound('victory');
+                            updateScore(50);
+                            showModal("Memory Blitz Mastered!", "All plant hormone and enzyme pairs matched successfully! +50 XP", "success", () => {
+                                initMemoryGame();
+                            });
+                        }, 500);
+                    }
+                } else {
+                    // Not a match
+                    updateScore(-5);
+                    setTimeout(() => {
+                        document.getElementById(`mem-card-${first.index}`).parentElement.classList.remove('flipped');
+                        document.getElementById(`mem-card-${second.index}`).parentElement.classList.remove('flipped');
+                        flippedCards = [];
+                    }, 1000);
+                }
             }
         }
 
         // --- VISUAL EFFECTS (CONFETTI) ---
-        let particles = [];
-        const colors = ['#22c55e', '#4ade80', '#16a34a', '#86efac', '#e2e8f0', '#f8fafc'];
+        let confettiParticles = [];
+        const confettiColors = ['#10b981', '#34d399', '#059669', '#a7f3d0', '#f43f5e', '#fbbf24'];
 
         function triggerConfetti() {
             const canvas = document.getElementById('confetti-canvas');
-            const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
-            for (let i = 0; i < 100; i++) {
-                particles.push({
+
+            for (let i = 0; i < 90; i++) {
+                confettiParticles.push({
                     x: canvas.width / 2,
-                    y: canvas.height / 2 + 100,
+                    y: canvas.height / 2 + 50,
                     r: Math.random() * 6 + 2,
-                    dx: Math.random() * 20 - 10,
-                    dy: Math.random() * -20 - 5,
-                    color: colors[Math.floor(Math.random() * colors.length)],
+                    dx: Math.random() * 16 - 8,
+                    dy: Math.random() * -18 - 4,
+                    color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
                     tilt: Math.floor(Math.random() * 10) - 10,
                     tiltAngleInc: (Math.random() * 0.07) + 0.05,
                     tiltAngle: 0
                 });
             }
-            
             animateConfetti();
         }
 
         function animateConfetti() {
             const canvas = document.getElementById('confetti-canvas');
-            if(!canvas) return;
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            let activeParticles = 0;
-            
-            particles.forEach((p, index) => {
+
+            let active = 0;
+            confettiParticles.forEach(p => {
                 if (p.y <= canvas.height) {
-                    activeParticles++;
+                    active++;
                     p.tiltAngle += p.tiltAngleInc;
                     p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
-                    p.x += Math.sin(p.tiltAngle) * 2;
-                    p.dy += 0.5; // gravity
+                    p.dy += 0.45; // Gravity
                     p.x += p.dx;
                     p.y += p.dy;
 
@@ -716,27 +1266,23 @@
                     ctx.stroke();
                 }
             });
-            
-            particles = particles.filter(p => p.y <= canvas.height);
 
-            if (activeParticles > 0) {
-                requestAnimationFrame(animateConfetti);
-            }
+            confettiParticles = confettiParticles.filter(p => p.y <= canvas.height);
+            if (active > 0) requestAnimationFrame(animateConfetti);
         }
 
         window.addEventListener('resize', () => {
             const canvas = document.getElementById('confetti-canvas');
-            if(canvas) {
+            if (canvas) {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
             }
         });
 
-        // Initialize state on load
+        // Initialize state on window load
         window.onload = () => {
             switchView('menu-view');
         };
-
     </script>
 </body>
 </html>
