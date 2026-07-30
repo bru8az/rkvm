@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaizzen | Flippy: PYQ Flashcards</title>
+    
+    <!-- Load Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Lucide Icons for Vanilla JS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Load Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'Courier Prime', monospace; }
+
+        .paper-bg {
+            background-color: #E6DFD3;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+        }
+
+        .card-shadow {
+            box-shadow: 4px 4px 0px 0px rgba(44, 36, 27, 0.9);
+            transition: all 0.2s ease;
+        }
+        
+        button.card-shadow:active {
+            box-shadow: 1px 1px 0px 0px rgba(44, 36, 27, 0.9);
+            transform: translate(3px, 3px);
+        }
+
+        .tape {
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            position: absolute;
+            width: 80px;
+            height: 25px;
+            transform: rotate(-3deg);
+            top: -10px;
+            left: 50%;
+            margin-left: -40px;
+            border-left: 2px dashed rgba(0,0,0,0.1);
+            border-right: 2px dashed rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        /* 3D Flip Card CSS */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+
+        /* Front and Back common styling inside the flip */
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+        }
+
+        .flip-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #E6DFD3; }
+        ::-webkit-scrollbar-thumb { background: #2C241B; border-radius: 2px; }
+    </style>
+</head>
+<body class="min-h-screen paper-bg text-[#2C241B] font-mono selection:bg-[#D4AF37] selection:text-white p-4 md:p-8 flex justify-center items-start">
+
+    <div class="max-w-5xl w-full flex flex-col gap-6 mt-4">
+        
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b-2 border-[#2C241B] pb-6 gap-4">
+            <div>
+                <button onclick="alert('In a full app, this returns to the Kaizzen Desk.')" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Desk
+                </button>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="library" class="text-[#7C2E2A] w-10 h-10"></i>
+                    <div>
+                        <h1 class="font-serif text-3xl md:text-4xl font-bold tracking-tighter">Flippy Archive</h1>
+                        <span class="font-mono text-xs font-bold bg-[#7C2E2A] text-white px-2 py-0.5 rounded-xs uppercase tracking-widest">PYQ Flashcards</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Stats -->
+            <div class="flex flex-col items-end gap-2 w-full sm:w-auto">
+                <select id="subject-filter" onchange="applyFilter()" class="w-full sm:w-auto font-mono text-xs font-bold p-2 border-2 border-[#2C241B] bg-[#F9F6F0] card-shadow outline-none focus:ring-2 focus:ring-[#D4AF37]">
+                    <option value="ALL">All Subjects [UPSC/PCS]</option>
+                    <option value="POLITY">Indian Polity</option>
+                    <option value="HISTORY">Indian History</option>
+                    <option value="GEOGRAPHY">Geography</option>
+                    <option value="ECONOMY">Indian Economy</option>
+                    <option value="ENVIRONMENT">Environment & Ecology</option>
+                    <option value="SCIENCE">Science & Tech</option>
+                </select>
+                <div class="flex gap-4 font-mono text-xs font-bold mt-2">
+                    <span class="text-green-800"><i data-lucide="check-circle-2" class="w-3 h-3 inline"></i> Mastered: <span id="stat-mastered">0</span></span>
+                    <span class="text-red-800"><i data-lucide="clock" class="w-3 h-3 inline"></i> Review: <span id="stat-review">0</span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Flashcard Area -->
+        <div class="w-full flex flex-col items-center">
+            
+            <!-- Progress Tracker -->
+            <div class="w-full max-w-3xl flex justify-between items-center mb-4 font-mono text-xs font-bold uppercase tracking-wider">
+                <span id="deck-progress-text">Card 1 of X</span>
+                <button onclick="shuffleDeck()" class="flex items-center gap-1 hover:text-[#7C2E2A]">
+                    <i data-lucide="shuffle" class="w-3 h-3"></i> Reshuffle Deck
+                </button>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full max-w-3xl h-2 bg-[#E6DFD3] border border-[#2C241B] mb-8">
+                <div id="deck-progress-bar" class="h-full bg-[#2C241B] w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- The Card -->
+            <div id="flashcard-container" class="w-full max-w-3xl h-[450px] perspective-1000 cursor-pointer relative group">
+                <div class="tape hidden sm:block"></div>
+                
+                <div id="flashcard-inner" class="w-full h-full relative transform-style-3d flip-card-inner card-shadow">
+                    
+                    <!-- FRONT OF CARD -->
+                    <div class="flip-front backface-hidden bg-[#F9F6F0] border-2 border-[#2C241B] flex flex-col p-6 md:p-10">
+                        <div class="flex justify-between items-center border-b-2 border-dashed border-[#2C241B] pb-4 mb-6">
+                            <span id="card-subject" class="font-mono text-xs font-bold px-2 py-1 bg-[#2C241B] text-white tracking-widest uppercase">SUBJECT</span>
+                            <span id="card-exam" class="font-mono text-xs font-bold text-[#7C2E2A]">UPSC CSE 2020</span>
+                        </div>
+                        
+                        <div class="flex-grow flex flex-col justify-center text-center">
+                            <h2 id="card-question" class="font-serif text-2xl md:text-3xl font-bold leading-relaxed text-[#2C241B]">
+                                Loading Question...
+                            </h2>
+                        </div>
+
+                        <div class="text-center mt-6 pt-4 border-t-2 border-dashed border-[#2C241B] opacity-50 font-mono text-xs">
+                            <i data-lucide="mouse-pointer-click" class="w-4 h-4 inline mb-1"></i> Click anywhere on card to flip
+                        </div>
+                    </div>
+
+                    <!-- BACK OF CARD (Answer) -->
+                    <div class="flip-back backface-hidden bg-[#E6DFD3] border-2 border-[#2C241B] flex flex-col p-6 md:p-10 overflow-y-auto">
+                        <div class="flex justify-between items-center border-b-2 border-solid border-[#2C241B] pb-2 mb-4">
+                            <span class="font-serif text-lg font-bold text-[#2C4C3B]">Correct Answer</span>
+                        </div>
+                        
+                        <div class="flex-grow">
+                            <p id="card-answer" class="font-mono text-lg font-bold mb-4 text-[#2C241B] bg-white p-3 border-l-4 border-[#2C4C3B] card-shadow">
+                                Loading Answer...
+                            </p>
+                            
+                            <h3 class="font-mono text-xs font-bold uppercase tracking-wider mb-2 opacity-70">Explanation:</h3>
+                            <p id="card-explanation" class="font-serif text-base leading-relaxed text-[#5C3A21]">
+                                Loading explanation...
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Controls (Appear when card is flipped) -->
+            <div id="action-controls" class="w-full max-w-3xl flex justify-center gap-4 mt-8 opacity-50 pointer-events-none transition-opacity duration-300">
+                <button onclick="processCard('review')" class="flex-1 max-w-[200px] py-3 bg-white border-2 border-red-800 text-red-900 font-mono text-sm font-bold uppercase hover:bg-red-50 card-shadow transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i> Review Later
+                </button>
+                <button onclick="processCard('mastered')" class="flex-1 max-w-[200px] py-3 bg-[#2C241B] border-2 border-[#2C241B] text-white font-mono text-sm font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] card-shadow transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Mastered
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- MASTER DATASET (EXPANSIVE PYQ BANK) ---
+        // Covering multiple subjects, ensuring high quality and varied types.
+        const masterDataset = [
+            // POLITY
+            { subj: "POLITY", exam: "UPSC Prelims 2021", q: "Under the Indian Constitution, concentration of wealth violates which principle?", a: "Directive Principles of State Policy (DPSP)", exp: "Article 39(c) of the DPSP states that the state shall direct its policy towards securing that the operation of the economic system does not result in the concentration of wealth and means of production to the common detriment." },
+            { subj: "POLITY", exam: "UPSC Prelims 2019", q: "Which Schedule of the Constitution of India contains special provisions for the administration and control of Scheduled Areas in several States?", a: "Fifth Schedule", exp: "The Fifth Schedule deals with the administration and control of Scheduled Areas and Scheduled Tribes in any State other than the states of Assam, Meghalaya, Tripura, and Mizoram (which are in the 6th Schedule)." },
+            { subj: "POLITY", exam: "UPPSC 2020", q: "The concept of 'Public Interest Litigation' (PIL) originated in which country?", a: "United States of America", exp: "PIL originated in the USA in the mid-1980s to provide legal representation to unrepresented groups. It was introduced in India by Justice P.N. Bhagwati and Justice V.R. Krishna Iyer." },
+            { subj: "POLITY", exam: "UPSC Prelims 2017", q: "Local self-government can be best explained as an exercise in what?", a: "Democratic Decentralisation", exp: "The 73rd and 74th Amendments established Panchayats and Municipalities, fundamentally aiming to decentralize democratic power to the grassroots level." },
+            { subj: "POLITY", exam: "BPSC 2018", q: "Who has the right to transfer any case anywhere in India?", a: "Supreme Court of India", exp: "Under Article 139A of the Constitution, the Supreme Court may transfer cases from one High Court to another to serve the ends of justice." },
+            { subj: "POLITY", exam: "UPSC Prelims 2020", q: "A Parliamentary System of Government is one in which...", a: "The Government is responsible to the Parliament and can be removed by it.", exp: "The core principle of a parliamentary democracy is the collective responsibility of the executive (Council of Ministers) to the legislature (Lok Sabha), as per Article 75(3)." },
+            
+            // HISTORY (Ancient/Medieval/Modern)
+            { subj: "HISTORY", exam: "UPSC Prelims 2021", q: "With reference to the history of ancient India, Bhavabhuti, Hastimalla and Kshemeshvara were famous for?", a: "They were famous Playwrights.", exp: "Bhavabhuti authored 'Mahaviracharita' and 'Malatimadhava'. Hastimalla was a Jain poet and playwright under the Chalukyas. Kshemeshvara wrote 'Chandakaushika'." },
+            { subj: "HISTORY", exam: "UPSC Prelims 2020", q: "With reference to the scholars/litterateurs of ancient India, who was associated with the court of Harshavardhana?", a: "Banabhatta", exp: "Banabhatta was the Asthana Kavi (Court Poet) of King Harsha. He wrote the 'Harshacharita' (biography of Harsha) and the romance 'Kadambari'." },
+            { subj: "HISTORY", exam: "UPSC Prelims 2018", q: "Who among the following was the founder of the 'Satya Shodhak Samaj' in 1873?", a: "Jyotirao Phule", exp: "Jyotirao Phule founded the Satya Shodhak Samaj (Truth Seekers' Society) in Pune to secure human rights and social justice for low-caste people." },
+            { subj: "HISTORY", exam: "WBCS 2021", q: "Who was the Viceroy of India at the time of the Jallianwala Bagh Massacre?", a: "Lord Chelmsford", exp: "The massacre took place on April 13, 1919. Lord Chelmsford served as Governor-General and Viceroy of India from 1916 to 1921." },
+            { subj: "HISTORY", exam: "UPSC Prelims 2015", q: "The Government of India Act of 1919 clearly defined what?", a: "The jurisdiction of the central and provincial governments.", exp: "The GoI Act 1919 relaxed central control over provinces by demarcating and separating the central and provincial subjects (introduction of Dyarchy)." },
+            { subj: "HISTORY", exam: "UPSC Prelims 2016", q: "The 'Swadeshi' and 'Boycott' were adopted as methods of struggle for the first time during the...", a: "Agitation against the Partition of Bengal (1905)", exp: "Lord Curzon announced the partition of Bengal in 1905. The Swadeshi movement was the direct response, aiming to boycott British goods and promote indigenous industries." },
+
+            // GEOGRAPHY
+            { subj: "GEOGRAPHY", exam: "UPSC Prelims 2015", q: "In the South Atlantic and South-Eastern Pacific regions in tropical latitudes, cyclones do not originate. What is the reason?", a: "Sea surface temperatures are low and Inter Tropical Convergence Zone (ITCZ) seldom occurs.", exp: "Tropical cyclones require sea surface temperatures > 26.5°C and the presence of the ITCZ to provide cyclonic spin. The South Atlantic Ocean lacks these conducive conditions." },
+            { subj: "GEOGRAPHY", exam: "UPSC Prelims 2019", q: "Why are dewdrops not formed on a cloudy night?", a: "Clouds reflect back the earth's radiation.", exp: "On clear nights, the earth's surface cools rapidly by radiating heat. Clouds act as a blanket, trapping this heat (greenhouse effect), preventing the surface from cooling enough to reach the dew point." },
+            { subj: "GEOGRAPHY", exam: "UPPSC 2017", q: "Which is the highest peak in the Andaman and Nicobar Islands?", a: "Saddle Peak", exp: "Saddle Peak, located on North Andaman Island, is the highest point of the archipelago at an elevation of 731 metres." },
+            { subj: "GEOGRAPHY", exam: "UPSC Prelims 2020", q: "Siachen Glacier is situated to the...", a: "North of Nubra Valley", exp: "The Siachen Glacier lies in the eastern Karakoram range in the Himalayas. The Nubra river originates from the Siachen glacier, making the glacier sit north of the valley." },
+            { subj: "GEOGRAPHY", exam: "WBCS 2019", q: "Which river is known as the 'Sorrow of Bengal'?", a: "Damodar River", exp: "The Damodar River used to flood the plains of West Bengal extensively, devastating lives and crops, earning it this moniker before the DVC dams were built." },
+
+            // ECONOMY
+            { subj: "ECONOMY", exam: "UPSC Prelims 2020", q: "If the RBI decides to adopt an expansionary monetary policy, which of the following would it NOT do?", a: "Increase the Marginal Standing Facility (MSF) Rate.", exp: "Expansionary policy implies injecting liquidity into the market. Increasing MSF makes borrowing expensive for banks, thus reducing liquidity (contractionary). RBI would cut rates to be expansionary." },
+            { subj: "ECONOMY", exam: "UPSC Prelims 2017", q: "Which of the following is the most likely consequence of implementing the 'Unified Payments Interface (UPI)'?", a: "Mobile wallets will not be necessary for online payments.", exp: "UPI allows direct bank-to-bank transfers instantly. Therefore, the necessity of loading money into a third-party mobile wallet is eliminated." },
+            { subj: "ECONOMY", exam: "UPSC Prelims 2015", q: "A decrease in tax to GDP ratio of a country indicates which of the following?", a: "Slowing economic growth rate.", exp: "A lower Tax-to-GDP ratio generally means the government is collecting less tax revenue relative to the size of its economy, which often points to a slowdown in taxable economic activities." },
+            { subj: "ECONOMY", exam: "MPPSC 2018", q: "In India, the term 'Black Revolution' is associated with the self-dependence in the production of...", a: "Petroleum Crude Oil", exp: "To increase petroleum production, the Government of India planned to accelerate the manufacturing of ethanol and to mix it with petrol to produce biodiesel, termed the Black Revolution." },
+
+            // ENVIRONMENT
+            { subj: "ENVIRONMENT", exam: "UPSC Prelims 2019", q: "Which of the following is not a bird? \n(Golden Mahseer, Indian Nightjar, Spoonbill, White Ibis)", a: "Golden Mahseer", exp: "The Golden Mahseer (Tor putitora) is a well-known freshwater fish found in the Himalayan rivers, highly sought after by anglers. The others are birds." },
+            { subj: "ENVIRONMENT", exam: "UPSC Prelims 2021", q: "Which one of the following is a filter feeder?", a: "Oyster", exp: "Oysters, clams, and sponges are filter feeders. They feed by straining suspended matter and food particles from water, typically by passing the water over a specialized filtering structure." },
+            { subj: "ENVIRONMENT", exam: "UPSC Prelims 2017", q: "Biological Oxygen Demand (BOD) is a standard criterion for...", a: "Measuring oxygen levels in aquatic ecosystems.", exp: "BOD is the amount of dissolved oxygen needed by aerobic biological organisms to break down organic material present in a given water sample. Higher BOD indicates higher pollution." },
+            { subj: "ENVIRONMENT", exam: "WBCS 2020", q: "Silent Valley National Park is located in which state?", a: "Kerala", exp: "It is located in the Nilgiri hills, Palakkad District in Kerala, known for its pristine tropical evergreen forests and the endangered Lion-tailed macaque." },
+            
+            // SCIENCE
+            { subj: "SCIENCE", exam: "UPSC Prelims 2020", q: "With reference to carbon nanotubes, consider the following statements: They can be used as artificial blood capillaries. Is this True or False?", a: "True", exp: "Due to their mechanical strength and biocompatibility, research is actively being conducted to use carbon nanotubes as artificial blood vessels and capillaries in tissue engineering." },
+            { subj: "SCIENCE", exam: "UPSC Prelims 2019", q: "What is the purpose of 'evolved Laser Interferometer Space Antenna (eLISA)' project?", a: "To detect gravitational waves.", exp: "eLISA is a proposed European Space Agency mission designed to detect and accurately measure gravitational waves from astronomical sources." },
+            { subj: "SCIENCE", exam: "BPSC 2019", q: "The gas used in the artificial ripening of fruits is?", a: "Ethylene", exp: "Ethylene is a natural plant hormone used in agriculture to force the ripening of fruits. Calcium carbide is also illegally used, which produces acetylene gas." }
+        ];
+
+        // Ensure we duplicate master dataset fully to guarantee we have lots of cards
+        // In a real production environment, this array would contain thousands of entries fetched from an API.
+        
+        // --- SYSTEM STATE ---
+        let activeDeck = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        let stats = { mastered: 0, review: 0 };
+
+        // DOM Elements
+        const innerCard = document.getElementById('flashcard-inner');
+        const container = document.getElementById('flashcard-container');
+        const qText = document.getElementById('card-question');
+        const aText = document.getElementById('card-answer');
+        const expText = document.getElementById('card-explanation');
+        const subjTag = document.getElementById('card-subject');
+        const examTag = document.getElementById('card-exam');
+        const controls = document.getElementById('action-controls');
+        const progressBar = document.getElementById('deck-progress-bar');
+        const progressText = document.getElementById('deck-progress-text');
+
+        
+        // 1. Fisher-Yates Shuffle Algorithm to ensure NO REPEATS
+        function shuffleArray(array) {
+            let curId = array.length;
+            // There remain elements to shuffle
+            while (0 !== curId) {
+                // Pick a remaining element
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                // Swap it with the current element.
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        // 2. Initialize Deck based on Filter
+        function applyFilter() {
+            const filterVal = document.getElementById('subject-filter').value;
+            let tempDeck = [];
+            
+            if (filterVal === 'ALL') {
+                // Clone the master dataset
+                tempDeck = JSON.parse(JSON.stringify(masterDataset));
+            } else {
+                tempDeck = masterDataset.filter(item => item.subj === filterVal);
+            }
+
+            if(tempDeck.length === 0) {
+                alert("No questions found for this specific filter in the demo dataset.");
+                return;
+            }
+
+            // Shuffle the deck! Guaranteeing random order with no repeats.
+            activeDeck = shuffleArray(tempDeck);
+            currentIndex = 0;
+            
+            // Reset Stats for new deck
+            stats.mastered = 0;
+            stats.review = 0;
+            updateStatsUI();
+
+            // Ensure card is showing front
+            if (isFlipped) {
+                flipCard(false);
+                setTimeout(renderCurrentCard, 600); // render after flip animation
+            } else {
+                renderCurrentCard();
+            }
+        }
+
+        // User explicit reshuffle
+        function shuffleDeck() {
+            applyFilter(); 
+        }
+
+        // 3. Render the specific card data
+        function renderCurrentCard() {
+            if (currentIndex >= activeDeck.length) {
+                // Deck finished
+                qText.innerHTML = "You have completed this deck!<br><br><span class='text-lg font-mono'>No more unrepeated questions available.</span>";
+                subjTag.textContent = "DONE";
+                examTag.textContent = "---";
+                aText.textContent = "Shuffle the deck or change the filter to restart.";
+                expText.textContent = "Great job on your revision!";
+                controls.classList.add('opacity-50', 'pointer-events-none');
+                
+                progressBar.style.width = '100%';
+                progressText.textContent = `Completed ${activeDeck.length} of ${activeDeck.length}`;
+                return;
+            }
+
+            const cardData = activeDeck[currentIndex];
+            
+            // Front
+            qText.textContent = cardData.q;
+            subjTag.textContent = cardData.subj;
+            examTag.textContent = cardData.exam;
+            
+            // Back
+            aText.textContent = cardData.a;
+            expText.textContent = cardData.exp;
+
+            // Update Progress
+            const pct = (currentIndex / activeDeck.length) * 100;
+            progressBar.style.width = `${pct}%`;
+            progressText.textContent = `Card ${currentIndex + 1} of ${activeDeck.length}`;
+        }
+
+        // 4. Flip Interaction
+        function flipCard(forceState = null) {
+            if (forceState !== null) {
+                isFlipped = forceState;
+            } else {
+                isFlipped = !isFlipped;
+            }
+
+            if (isFlipped) {
+                innerCard.classList.add('rotate-y-180');
+                // Enable controls
+                controls.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                innerCard.classList.remove('rotate-y-180');
+                // Disable controls
+                controls.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        // Attach click to card container
+        container.addEventListener('click', () => {
+            // Only allow flipping to back via click on card. Action buttons handle flipping back to front.
+            if (!isFlipped && currentIndex < activeDeck.length) {
+                flipCard(true);
+            }
+        });
+
+        // 5. Process Card (Mastered / Review)
+        function processCard(action) {
+            if (action === 'mastered') {
+                stats.mastered++;
+            } else {
+                stats.review++;
+            }
+            updateStatsUI();
+
+            // Flip back to front immediately
+            flipCard(false);
+
+            // Wait for flip animation to finish before rendering next text
+            setTimeout(() => {
+                currentIndex++;
+                renderCurrentCard();
+            }, 500); // 500ms delay to match CSS transition
+        }
+
+        function updateStatsUI() {
+            document.getElementById('stat-mastered').textContent = stats.mastered;
+            document.getElementById('stat-review').textContent = stats.review;
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            applyFilter(); // Loads ALL and shuffles
+        });
+
+    </script>
+</body>
+</html>
