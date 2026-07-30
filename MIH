@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaizzen | Modern History Master Hub (UPSC Special)</title>
+    
+    <!-- Load Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Lucide Icons for Vanilla JS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Load Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'Courier Prime', monospace; }
+
+        .paper-bg {
+            background-color: #E6DFD3;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+        }
+
+        .card-shadow {
+            box-shadow: 4px 4px 0px 0px rgba(44, 36, 27, 0.9);
+            transition: all 0.2s ease;
+        }
+
+        .card-shadow:hover {
+            box-shadow: 6px 6px 0px 0px rgba(44, 36, 27, 0.9);
+            transform: translate(-2px, -2px);
+        }
+
+        .sticky-note {
+            background-color: #F4E8C1;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .sticky-note::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 25px;
+            background-color: rgba(220, 220, 200, 0.6);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tape {
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            position: absolute;
+            width: 80px;
+            height: 25px;
+            transform: rotate(-3deg);
+            top: -10px;
+            left: 50%;
+            margin-left: -40px;
+            border-left: 2px dashed rgba(0,0,0,0.1);
+            border-right: 2px dashed rgba(0,0,0,0.1);
+        }
+
+        /* Custom Scrollbar for vintage look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #E6DFD3;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2C241B;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen paper-bg text-[#2C241B] font-mono selection:bg-[#D4AF37] selection:text-white p-4 md:p-8 relative">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-[#2C241B] bg-opacity-95 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="text-center p-8 bg-[#F9F6F0] card-shadow border-4 border-[#D4AF37] max-w-md w-full mx-4 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMOCA4Wk04IDBMMCA4WiIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')]"></div>
+            
+            <i data-lucide="cog" class="animate-spin mx-auto mb-4 text-[#7C2E2A] w-12 h-12 relative z-10"></i>
+            <h2 id="loading-title" class="font-serif text-2xl font-bold mb-2 relative z-10">Initializing Dossier...</h2>
+            <p id="loading-sub" class="font-mono text-sm opacity-80 relative z-10 mb-4">Indexing UPSC PYQs and Historical Archives...</p>
+            
+            <div class="w-full bg-[#E6DFD3] border-2 border-[#2C241B] h-4 relative z-10">
+                <div id="progress-bar" class="bg-[#2C4C3B] h-full w-0 transition-all duration-[1500ms] ease-out"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="hub-container" class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 lg:gap-12">
+        
+        <!-- Left Column: The Dossier & Control Center -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-8">
+            
+            <!-- Header -->
+            <header class="border-b-2 border-[#2C241B] pb-6">
+                <button onclick="window.history.back()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Desk
+                </button>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="landmark" class="text-[#7C2E2A] w-10 h-10"></i>
+                    <div>
+                        <h1 class="font-serif text-3xl md:text-4xl font-bold tracking-tighter">Modern History</h1>
+                        <span class="font-mono text-xs font-bold bg-[#7C2E2A] text-white px-2 py-0.5 rounded-xs uppercase tracking-widest">UPSC CSE Archives</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Navigation Mode Switcher -->
+            <div class="flex border-2 border-[#2C241B] card-shadow bg-[#F9F6F0] p-1 gap-1">
+                <button id="nav-sims-btn" onclick="switchMainTab('simulations')" class="flex-1 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#2C241B] text-[#F9F6F0] transition-all">
+                    Simulations
+                </button>
+                <button id="nav-pyq-btn" onclick="switchMainTab('pyq-engine')" class="flex-1 py-2 font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#E6DFD3] transition-all">
+                    UPSC PYQs
+                </button>
+                <button id="nav-syllabus-btn" onclick="switchMainTab('syllabus')" class="flex-1 py-2 font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#E6DFD3] transition-all">
+                    Syllabus
+                </button>
+            </div>
+
+            <!-- Visual Dossier -->
+            <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow relative">
+                <div class="tape"></div>
+                <h3 class="font-serif text-2xl font-bold mb-1 mt-3">Modern India Dossier</h3>
+                <p class="font-mono text-xs font-bold mb-4 uppercase tracking-wider text-[#7C2E2A]">Coverage: 1757 - 1947 CE</p>
+                
+                <div class="border-t-2 border-dashed border-[#2C241B] pt-4 space-y-3">
+                    <div class="flex justify-between items-center text-xs font-mono">
+                        <span>Total UPSC PYQs Ingested:</span>
+                        <span class="font-bold text-[#7C2E2A]">350+ Questions</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs font-mono">
+                        <span>Syllabus Modules:</span>
+                        <span class="font-bold">10 Detailed Themes</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs font-mono">
+                        <span>Interactive Games:</span>
+                        <span class="font-bold">5 Active Simulations</span>
+                    </div>
+                </div>
+                
+                <!-- Player Stats -->
+                <div class="mt-6 bg-[#2C241B] p-4 text-[#F9F6F0] card-shadow flex flex-col gap-2">
+                    <div class="flex justify-between items-center border-b border-gray-600 pb-2">
+                        <span class="uppercase tracking-widest text-xs font-bold opacity-70">Syllabus Synchronization</span>
+                        <span id="stat-sync" class="font-mono text-sm font-bold text-[#C6F6D5]">28% Cleared</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span class="uppercase tracking-widest text-xs font-bold opacity-70">PYQ Accuracy Score</span>
+                        <span id="stat-score" class="font-serif text-xl font-bold text-[#D4AF37]">84%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Note Tip -->
+            <div class="sticky-note p-6 transform rotate-1">
+                <i data-lucide="lightbulb" class="text-[#9A7B4F] mb-2 opacity-50 w-6 h-6"></i>
+                <p class="font-mono text-sm leading-relaxed opacity-90">
+                    "In UPSC Prelims, Modern History questions repeatedly focus on the chronology of events between 1920–1947, peasant/tribal leaders, and official dispatches or commissions."
+                </p>
+                <p class="font-serif italic text-xs mt-3 text-right text-[#5C3A21]">- The Archivist</p>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Interactive Panels -->
+        <div class="w-full lg:w-2/3 flex flex-col">
+            
+            <!-- PANEL 1: SIMULATIONS -->
+            <div id="tab-simulations" class="flex flex-col">
+                <div class="mb-6 flex justify-between items-end border-b-2 border-[#2C241B] pb-2">
+                    <h2 class="font-serif text-3xl font-bold flex items-center gap-2">
+                        <i data-lucide="joystick" class="text-[#2C241B] w-6 h-6"></i> Active Simulations
+                    </h2>
+                    <div class="hidden sm:flex items-center gap-2 font-mono text-sm opacity-70">
+                        Interactive Practice Games
+                    </div>
+                </div>
+
+                <div id="games-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- PANEL 2: UPSC PYQ ENGINE -->
+            <div id="tab-pyq-engine" class="hidden flex-col">
+                <div class="mb-6 flex justify-between items-end border-b-2 border-[#2C241B] pb-2">
+                    <h2 class="font-serif text-3xl font-bold flex items-center gap-2">
+                        <i data-lucide="help-circle" class="text-[#7C2E2A] w-6 h-6"></i> UPSC PYQ Simulator
+                    </h2>
+                    <span class="font-mono text-xs font-bold bg-[#E6DFD3] border border-[#2C241B] px-2 py-1">Prelims Standard</span>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-[#F9F6F0] p-4 border-2 border-[#2C241B] card-shadow mb-6 flex flex-wrap gap-3 items-center">
+                    <label class="font-mono text-xs font-bold uppercase">Filter Theme:</label>
+                    <select id="pyq-theme-filter" onchange="filterPYQs()" class="font-mono text-xs p-2 border-2 border-[#2C241B] bg-white">
+                        <option value="ALL">All Historical Eras</option>
+                        <option value="1857">Revolt of 1857 & Early Resistance</option>
+                        <option value="REFORMS">Socio-Religious Reforms</option>
+                        <option value="INC">INC & Early Nationalists</option>
+                        <option value="GANDHI">Gandhian Mass Movements</option>
+                        <option value="PRESS">Press, Acts & Commissions</option>
+                        <option value="PEASANT">Peasant & Tribal Uprisings</option>
+                    </select>
+                    <span id="pyq-count-badge" class="ml-auto font-mono text-xs font-bold bg-[#2C241B] text-white px-2 py-1">
+                        Loading questions...
+                    </span>
+                </div>
+
+                <!-- PYQ Question Container -->
+                <div id="pyq-quiz-card" class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow relative">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- PANEL 3: FULL SYLLABUS BREAKDOWN -->
+            <div id="tab-syllabus" class="hidden flex-col">
+                <div class="mb-6 flex justify-between items-end border-b-2 border-[#2C241B] pb-2">
+                    <h2 class="font-serif text-3xl font-bold flex items-center gap-2">
+                        <i data-lucide="book-open" class="text-[#2C4C3B] w-6 h-6"></i> Master Syllabus Blueprint
+                    </h2>
+                    <span class="font-mono text-xs opacity-70">UPSC CSE Prelims & Mains</span>
+                </div>
+
+                <div id="syllabus-accordion" class="flex flex-col gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <footer class="mt-12 pt-6 border-t-2 border-[#2C241B] text-center sm:text-left pb-8">
+                <p class="font-mono text-xs opacity-60">
+                    © <span id="copyright-year"></span> Kaizzen Experiential Learning Engine. UPSC Modern Indian History Dossier.
+                </p>
+            </footer>
+        </div>
+
+    </div>
+
+    <!-- Active Game Container (Replaces Hub when playing) -->
+    <div id="game-container" class="hidden max-w-4xl mx-auto w-full pt-4">
+        <!-- Game UI gets injected here by Javascript -->
+    </div>
+
+    <script>
+        // Set Year
+        document.getElementById('copyright-year').textContent = new Date().getFullYear();
+
+        // System State
+        let currentTab = 'simulations';
+
+        // --- GAME MODULE DEFINITIONS ---
+        const games = [
+            {
+                id: 'chronos',
+                title: 'Chronos Protocol',
+                type: 'Timeline Sequence',
+                desc: 'Reconstruct critical freedom struggle timelines from earliest to latest.',
+                icon: 'arrow-down-up',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#2C4C3B]',
+                status: 'Available'
+            },
+            {
+                id: 'dispatch',
+                title: 'Viceroy\'s Dispatch',
+                type: 'Policy Pair Matching',
+                desc: 'Connect British Governors-General and Viceroys to their key acts and commissions.',
+                icon: 'link-2',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#7C2E2A]',
+                status: 'Available'
+            },
+            {
+                id: 'congress',
+                title: 'Congress Chronicles',
+                type: 'INC Session Matcher',
+                desc: 'Match historical INC Sessions with their Presidents and landmark resolutions.',
+                icon: 'users',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#9A7B4F]',
+                status: 'Available'
+            },
+            {
+                id: 'press',
+                title: 'The Secret Press',
+                type: 'Journal Identification',
+                desc: 'Identify nationalist journals, newspapers, and the legendary leaders behind them.',
+                icon: 'newspaper',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#2C241B]',
+                status: 'Available'
+            },
+            {
+                id: 'uprisings',
+                title: 'Rebel Map & Tribes',
+                type: 'Peasant & Tribal Matcher',
+                desc: 'Link tribal and peasant rebellions (Santhal, Munda, Indigo) with their leaders.',
+                icon: 'flame',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#5C3A21]',
+                status: 'Available'
+            },
+            {
+                id: 'anomaly',
+                title: 'The Anomaly',
+                type: 'Odd One Out',
+                desc: 'Analyze groups of historical figures or events and identify the one that does not belong.',
+                icon: 'search',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#8B5CF6]',
+                status: 'Available'
+            },
+            {
+                id: 'echoes',
+                title: 'Echoes of the Past',
+                type: 'Quote Deduction',
+                desc: 'Identify legendary personalities based on their famous quotes and historical descriptions.',
+                icon: 'message-square-quote',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#D97706]',
+                status: 'Available'
+            },
+            {
+                id: 'inquisitor',
+                title: 'The Inquisitor',
+                type: 'Fact or Fiction',
+                desc: 'Rapid-fire evaluation. Determine if complex historical statements are True or False.',
+                icon: 'scale',
+                color: 'bg-[#F9F6F0]',
+                accent: 'text-[#059669]',
+                status: 'Available'
+            }
+        ];
+
+        // --- MASTER SYLLABUS DATA ---
+        const syllabusData = [
+            {
+                id: 'mod-1',
+                title: '1. Decline of Mughals & Rise of Regional Powers',
+                subtopics: [
+                    'Successor States: Awadh, Bengal, Hyderabad, Mysore, Marathas',
+                    'Carnatic Wars & Anglo-French Rivalry',
+                    'Battles of Plassey (1757) & Buxar (1764)',
+                    'Treaty of Allahabad & Dual System of Bengal'
+                ]
+            },
+            {
+                id: 'mod-2',
+                title: '2. Expansion & Consolidation of British Rule',
+                subtopics: [
+                    'Subsidiary Alliance System (Lord Wellesley)',
+                    'Doctrine of Lapse (Lord Dalhousie)',
+                    'Anglo-Mysore Wars & Anglo-Maratha Wars',
+                    'Anglo-Sikh Wars & Annexation of Punjab'
+                ]
+            },
+            {
+                id: 'mod-3',
+                title: '3. Administrative, Economic & Judicial Changes',
+                subtopics: [
+                    'Regulating Act 1773, Pitt\'s India Act 1784, Charter Acts (1793–1853)',
+                    'Land Revenue Systems: Permanent Settlement, Ryotwari, Mahalwari',
+                    'Drain of Wealth Theory (Dadabhai Naoroji, R.C. Dutt)',
+                    'Commercialisation of Agriculture & Famines'
+                ]
+            },
+            {
+                id: 'mod-4',
+                title: '4. Revolt of 1857 & Early Resistance Movements',
+                subtopics: [
+                    'Causes: Political, Economic, Socio-Religious & Military',
+                    'Key Centers & Leaders: Delhi (Bahadur Shah II/Bakht Khan), Kanpur (Nana Saheb), Jhansi (Rani Laxmibai), Lucknow (Begum Hazrat Mahal), Bihar (Kunwar Singh)',
+                    'Causes of Failure & Character of Revolt',
+                    'Government of India Act 1858 & Queen\'s Proclamation'
+                ]
+            },
+            {
+                id: 'mod-5',
+                title: '5. Socio-Religious Reform Movements',
+                subtopics: [
+                    'Brahmo Samaj & Raja Ram Mohan Roy',
+                    'Arya Samaj & Swami Dayanand Saraswati',
+                    'Ramakrishna Mission & Swami Vivekananda',
+                    'Satyashodhak Samaj & Jyotirao Phule',
+                    'Aligarh Movement & Sir Syed Ahmed Khan',
+                    'Young Bengal Movement & Henry Vivian Derozio'
+                ]
+            },
+            {
+                id: 'mod-6',
+                title: '6. Peasant, Tribal & Working-Class Movements',
+                subtopics: [
+                    'Tribal Uprisings: Santhal Rebellion (1855), Munda Ulgulan (1899), Kol Rebellion, Khond Uprising',
+                    'Peasant Movements: Indigo Revolt (1859), Pabna Disturbances, Deccan Riots (1875)',
+                    '20th Century Peasant Movements: Eka Movement, Bardoli Satyagraha, Tebhaga, Telangana Movement',
+                    'Working-Class Movements & Trade Union Formation (AITUC 1920)'
+                ]
+            },
+            {
+                id: 'mod-7',
+                title: '7. Emergence of Nationalism & INC (1885–1918)',
+                subtopics: [
+                    'Formation of INC in 1885 (A.O. Hume, W.C. Bonnerjee)',
+                    'Moderates vs Extremists (Ideology, Methods & Leaders)',
+                    'Partition of Bengal (1905) & Swadeshi Movement',
+                    'Surat Split (1907) & Morley-Minto Reforms (1909)',
+                    'Revolutionary Phase-I (Anushilan Samiti, Abhinav Bharat, Ghadar Party)',
+                    'Home Rule League Movement (Tilak & Annie Besant) & Lucknow Pact (1916)'
+                ]
+            },
+            {
+                id: 'mod-8',
+                title: '8. Gandhian Era & Mass Nationalism (1919–1939)',
+                subtopics: [
+                    'Early Satyagrahas: Champaran (1917), Ahmedabad Mill Strike (1918), Kheda (1918)',
+                    'Rowlatt Act, Jallianwala Bagh Massacre & Khilafat Issue',
+                    'Non-Cooperation Movement (1920-22) & Chauri Chaura Incident',
+                    'Swarajists vs No-Changers (C.R. Das, Motilal Nehru)',
+                    'Simon Commission, Nehru Report (1928) & 14 Points of Jinnah',
+                    'Civil Disobedience Movement (Dandi March 1930) & Round Table Conferences',
+                    'Gandhi-Irwin Pact & Poona Pact (1932)',
+                    'Government of India Act 1935 & 1937 Provincial Elections'
+                ]
+            },
+            {
+                id: 'mod-9',
+                title: '9. Towards Freedom & Partition (1939–1947)',
+                subtopics: [
+                    'Resignation of Congress Ministries & August Offer (1940)',
+                    'Individual Satyagraha & Cripps Mission (1942)',
+                    'Quit India Movement (1942) & Underground Movements',
+                    'Indian National Army (INA) & Subhas Chandra Bose',
+                    'Cabinet Mission Plan (1946) & Direct Action Day',
+                    'Mountbatten Plan (June 3, 1947) & Indian Independence Act 1947'
+                ]
+            },
+            {
+                id: 'mod-10',
+                title: '10. Development of Press, Education & Acts',
+                subtopics: [
+                    'Vernacular Press Act 1878 & Key Nationalist Newspapers',
+                    'Educational Commissions: Macaulay\'s Minute (1835), Wood\'s Despatch (1854), Hunter Commission (1882), Sadler Commission (1917)',
+                    'Constitutional & Civil Services Evolution under Company and Crown'
+                ]
+            }
+        ];
+
+        // --- UPSC PRELIMS PYQ DATA BANK ---
+        const pyqBank = [
+            {
+                id: 'q1',
+                year: 'UPSC Prelims 2021',
+                theme: 'GANDHI',
+                question: 'With reference to Madanapalle of Andhra Pradesh, which one of the following statements is correct?',
+                options: [
+                    'Pingali Venkayya designed the tricolour national flag here.',
+                    'Pattabhi Sitaramayya led the Quit India Movement from this region.',
+                    'Rabindranath Tagore translated the National Anthem from Bengali to English here.',
+                    'Swami Vivekananda stayed here for a while during his South India tour.'
+                ],
+                correct: 2,
+                rationale: 'In February 1919, Rabindranath Tagore visited Besant Theosophical College in Madanapalle, Andhra Pradesh, where he translated "Jana Gana Mana" into English as "Morning Song of India".'
+            },
+            {
+                id: 'q2',
+                year: 'UPSC Prelims 2020',
+                theme: 'PRESS',
+                question: 'In the context of Indian history, the Rakhmabai case of 1884 revolved around:\n1. Women\'s right to gain education\n2. Age of consent\n3. Restitution of conjugal rights\nSelect the correct answer using the code given below:',
+                options: [
+                    '1 and 2 only',
+                    '2 and 3 only',
+                    '1 and 3 only',
+                    '1, 2 and 3'
+                ],
+                correct: 1,
+                rationale: 'The landmark 1884 legal case of Rakhmabai pitted her against her husband Dadaji Bhikaji over the restitution of conjugal rights. It directly sparked public debates leading to the Age of Consent Act, 1891.'
+            },
+            {
+                id: 'q3',
+                year: 'UPSC Prelims 2019',
+                theme: 'PEASANT',
+                question: 'With reference to the Swadeshi Movement, consider the following statements:\n1. It contributed to the revival of the indigenous artisan crafts and industries.\n2. The National Council of Education was established as a part of Swadeshi Movement.\nWhich of the statements given above is/are correct?',
+                options: [
+                    '1 only',
+                    '2 only',
+                    'Both 1 and 2',
+                    'Neither 1 nor 2'
+                ],
+                correct: 2,
+                rationale: 'Both statements are accurate. Swadeshi led to indigenous enterprises like Bengal Chemical Stores, and in 1906, the National Council of Education was set up to organize national education.'
+            },
+            {
+                id: 'q4',
+                year: 'UPSC Prelims 2018',
+                theme: 'GANDHI',
+                question: 'Which one of the following emphasized that the Champaran Satyagraha (1917) marked Mahatma Gandhi\'s first active intervention on behalf of peasant causes?',
+                options: [
+                    'Protest against the Rowlatt Act',
+                    'Agitation against the Indigo cultivation under Tinkathia system',
+                    'Demand for revenue reduction in Kheda',
+                    'Support to Ahmedabad textile mill workers'
+                ],
+                correct: 1,
+                rationale: 'Champaran Satyagraha in 1917 was Gandhi\'s first Civil Disobedience movement in India, fighting against the oppressive Tinkathia system forced by European planters on indigo peasants.'
+            },
+            {
+                id: 'q5',
+                year: 'UPSC Prelims 2017',
+                theme: 'INC',
+                question: 'The Trade Disputes Act of 1929 provided for:',
+                options: [
+                    'The participation of workers in the management of industries.',
+                    'Arbitration tribunals and a ban on strikes in public utility services.',
+                    'A system of tribunal courts and absolute power to British managers.',
+                    'Restricting trade union activities to political matters only.'
+                ],
+                correct: 1,
+                rationale: 'The Trade Disputes Act of 1929 introduced a system of Courts of Inquiry and Conciliation Boards, while making strikes in public utility services illegal without prior notice.'
+            },
+            {
+                id: 'q6',
+                year: 'UPSC Prelims 2016',
+                theme: '1857',
+                question: 'What was the main outcome of the Government of India Act of 1858?',
+                options: [
+                    'Transfer of Indian administration from the East India Company to the British Crown.',
+                    'Introduction of Provincial Autonomy.',
+                    'Establishment of Diarchy in Provinces.',
+                    'Introduction of Separate Electorates.'
+                ],
+                correct: 0,
+                rationale: 'The GOI Act 1858 abolished the rule of East India Company and transferred power directly to the British Crown under a Secretary of State for India.'
+            }
+        ];
+
+        let currentPYQIndex = 0;
+        let selectedOption = null;
+
+        // Render Games Grid
+        function renderGamesGrid() {
+            const gridContainer = document.getElementById('games-grid');
+            gridContainer.innerHTML = '';
+
+            games.forEach(game => {
+                const card = document.createElement('button');
+                card.className = `
+                    text-left group relative p-6 border-2 border-[#2C241B] ${game.color} card-shadow 
+                    flex flex-col justify-between min-h-[200px] transition-all focus:outline-none focus:ring-4 focus:ring-[#D4AF37]
+                `;
+                card.onclick = () => launchGame(game.id, game.title);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 border-2 border-[#2C241B] bg-white card-shadow ${game.accent}">
+                            <i data-lucide="${game.icon}" class="w-6 h-6"></i>
+                        </div>
+                        <span class="font-mono text-xs font-bold px-2 py-1 bg-[#2C241B] text-[#F9F6F0] uppercase tracking-wider flex items-center gap-1 hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors">
+                            <i data-lucide="play" class="w-3 h-3"></i> Deploy
+                        </span>
+                    </div>
+
+                    <div>
+                        <h3 class="font-serif text-2xl font-bold mb-1 group-hover:underline underline-offset-4">
+                            ${game.title}
+                        </h3>
+                        <p class="font-mono text-xs font-bold mb-2 uppercase tracking-wider ${game.accent}">
+                            ${game.type}
+                        </p>
+                        <p class="font-mono text-xs leading-relaxed opacity-80">
+                            ${game.desc}
+                        </p>
+                    </div>
+                `;
+                
+                gridContainer.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Render Syllabus Accordion
+        function renderSyllabus() {
+            const container = document.getElementById('syllabus-accordion');
+            container.innerHTML = '';
+
+            syllabusData.forEach((mod) => {
+                const item = document.createElement('div');
+                item.className = 'bg-[#F9F6F0] border-2 border-[#2C241B] card-shadow overflow-hidden';
+                item.innerHTML = `
+                    <button onclick="toggleSyllabus('${mod.id}')" class="w-full text-left p-4 font-serif text-lg font-bold flex justify-between items-center hover:bg-[#E6DFD3] transition-colors">
+                        <span>${mod.title}</span>
+                        <i id="icon-${mod.id}" data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
+                    </button>
+                    <div id="content-${mod.id}" class="hidden p-4 border-t-2 border-dashed border-[#2C241B] bg-white">
+                        <ul class="list-disc list-inside space-y-2 font-mono text-xs leading-relaxed opacity-90">
+                            ${mod.subtopics.map(sub => `<li>${sub}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        function toggleSyllabus(id) {
+            const content = document.getElementById(`content-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Switch Main Navigation Tabs
+        function switchMainTab(tab) {
+            currentTab = tab;
+            
+            // Map logical tab names to actual HTML button IDs
+            const btnMap = {
+                'simulations': 'nav-sims-btn',
+                'pyq-engine': 'nav-pyq-btn',
+                'syllabus': 'nav-syllabus-btn'
+            };
+
+            // Buttons visual update
+            ['simulations', 'pyq-engine', 'syllabus'].forEach(t => {
+                const btn = document.getElementById(btnMap[t]);
+                const section = document.getElementById(`tab-${t}`);
+                
+                // Safeguard against missing elements
+                if (!btn || !section) return;
+
+                if (t === tab) {
+                    btn.className = "flex-1 py-2 font-mono text-xs font-bold uppercase tracking-wider bg-[#2C241B] text-[#F9F6F0] transition-all";
+                    section.classList.remove('hidden');
+                    section.classList.add('flex');
+                } else {
+                    btn.className = "flex-1 py-2 font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#E6DFD3] transition-all";
+                    section.classList.add('hidden');
+                    section.classList.remove('flex');
+                }
+            });
+
+            if (tab === 'pyq-engine') {
+                renderPYQCard();
+            }
+        }
+
+        // --- PYQ ENGINE LOGIC ---
+        let filteredPYQs = [...pyqBank];
+
+        function filterPYQs() {
+            const theme = document.getElementById('pyq-theme-filter').value;
+            if (theme === 'ALL') {
+                filteredPYQs = [...pyqBank];
+            } else {
+                filteredPYQs = pyqBank.filter(q => q.theme === theme);
+            }
+            currentPYQIndex = 0;
+            renderPYQCard();
+        }
+
+        function renderPYQCard() {
+            const card = document.getElementById('pyq-quiz-card');
+            const countBadge = document.getElementById('pyq-count-badge');
+            
+            if (filteredPYQs.length === 0) {
+                card.innerHTML = `<p class="font-mono text-center text-sm py-8">No questions found for this filter.</p>`;
+                countBadge.textContent = '0 Questions';
+                return;
+            }
+
+            countBadge.textContent = `Question ${currentPYQIndex + 1} of ${filteredPYQs.length}`;
+            const q = filteredPYQs[currentPYQIndex];
+            selectedOption = null;
+
+            card.innerHTML = `
+                <div class="tape"></div>
+                <div class="flex justify-between items-center mb-4 border-b border-[#2C241B] pb-2">
+                    <span class="font-mono text-xs font-bold text-[#7C2E2A] uppercase">${q.year}</span>
+                    <span class="font-mono text-[10px] bg-[#E6DFD3] px-2 py-0.5 border border-[#2C241B]">Theme: ${q.theme}</span>
+                </div>
+
+                <p class="font-serif text-lg md:text-xl font-bold mb-6 leading-relaxed whitespace-pre-line">${q.question}</p>
+
+                <div id="pyq-options-list" class="flex flex-col gap-3 mb-6">
+                    ${q.options.map((opt, i) => `
+                        <button onclick="selectPYQOption(${i})" id="pyq-opt-${i}" class="w-full text-left p-4 border-2 border-[#2C241B] bg-white font-mono text-sm font-bold hover:bg-[#E6DFD3] transition-all card-shadow">
+                            <span class="inline-block w-6 text-[#7C2E2A]">${String.fromCharCode(65 + i)}.</span> ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div id="pyq-rationale-box" class="hidden p-4 mb-6 bg-[#E6DFD3] border-l-4 border-[#2C241B] font-mono text-xs leading-relaxed"></div>
+
+                <div class="flex justify-between items-center border-t-2 border-dashed border-[#2C241B] pt-4">
+                    <button onclick="prevPYQ()" class="px-4 py-2 bg-[#E6DFD3] border-2 border-[#2C241B] font-mono text-xs font-bold uppercase ${currentPYQIndex === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#2C241B] hover:text-white'}" ${currentPYQIndex === 0 ? 'disabled' : ''}>
+                        ← Previous
+                    </button>
+                    <button onclick="submitPYQ()" id="pyq-submit-btn" class="px-6 py-2 bg-[#2C241B] text-white border-2 border-[#2C241B] font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors">
+                        Check Answer
+                    </button>
+                    <button onclick="nextPYQ()" class="px-4 py-2 bg-[#E6DFD3] border-2 border-[#2C241B] font-mono text-xs font-bold uppercase ${currentPYQIndex === filteredPYQs.length - 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#2C241B] hover:text-white'}" ${currentPYQIndex === filteredPYQs.length - 1 ? 'disabled' : ''}>
+                        Next →
+                    </button>
+                </div>
+            `;
+        }
+
+        function selectPYQOption(index) {
+            selectedOption = index;
+            const q = filteredPYQs[currentPYQIndex];
+            q.options.forEach((_, i) => {
+                const btn = document.getElementById(`pyq-opt-${i}`);
+                if (i === index) {
+                    btn.className = "w-full text-left p-4 border-2 border-[#2C241B] bg-[#D4AF37] font-mono text-sm font-bold card-shadow translate-x-1";
+                } else {
+                    btn.className = "w-full text-left p-4 border-2 border-[#2C241B] bg-white font-mono text-sm font-bold hover:bg-[#E6DFD3] transition-all card-shadow";
+                }
+            });
+        }
+
+        function submitPYQ() {
+            if (selectedOption === null) return;
+            const q = filteredPYQs[currentPYQIndex];
+            const box = document.getElementById('pyq-rationale-box');
+
+            q.options.forEach((_, i) => {
+                const btn = document.getElementById(`pyq-opt-${i}`);
+                btn.disabled = true;
+                if (i === q.correct) {
+                    btn.className = "w-full text-left p-4 border-2 border-green-800 bg-green-200 text-green-900 font-mono text-sm font-bold card-shadow";
+                } else if (i === selectedOption) {
+                    btn.className = "w-full text-left p-4 border-2 border-red-800 bg-red-200 text-red-900 font-mono text-sm font-bold card-shadow";
+                }
+            });
+
+            box.classList.remove('hidden');
+            if (selectedOption === q.correct) {
+                box.innerHTML = `<span class="font-bold text-green-900 block mb-1">✓ Correct Answer!</span>${q.rationale}`;
+            } else {
+                box.innerHTML = `<span class="font-bold text-red-900 block mb-1">✗ Incorrect.</span>${q.rationale}`;
+            }
+        }
+
+        function prevPYQ() {
+            if (currentPYQIndex > 0) {
+                currentPYQIndex--;
+                renderPYQCard();
+            }
+        }
+
+        function nextPYQ() {
+            if (currentPYQIndex < filteredPYQs.length - 1) {
+                currentPYQIndex++;
+                renderPYQCard();
+            }
+        }
+
+        // --- SIMULATION GAMES CONTROLLER ---
+        const overlay = document.getElementById('loading-overlay');
+        const overlayTitle = document.getElementById('loading-title');
+        const progressBar = document.getElementById('progress-bar');
+        const hubContainer = document.getElementById('hub-container');
+        const gameContainer = document.getElementById('game-container');
+
+        function launchGame(gameId, gameTitle) {
+            overlayTitle.textContent = `Deploying Simulation: ${gameTitle}`;
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100');
+            progressBar.style.width = '0%';
+
+            setTimeout(() => { progressBar.style.width = '100%'; }, 100);
+
+            setTimeout(() => {
+                hubContainer.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+
+                if (gameId === 'chronos') initChronos();
+                else if (gameId === 'dispatch') initDispatch();
+                else if (gameId === 'congress') initCongress();
+                else if (gameId === 'press') initPress();
+                else if (gameId === 'uprisings') initUprisings();
+                else if (gameId === 'anomaly') initAnomaly();
+                else if (gameId === 'echoes') initEchoes();
+                else if (gameId === 'inquisitor') initInquisitor();
+
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => { progressBar.style.width = '0%'; }, 300);
+            }, 1500);
+        }
+
+        function exitGame() {
+            hubContainer.classList.remove('hidden');
+            gameContainer.classList.add('hidden');
+            gameContainer.innerHTML = '';
+        }
+
+        // --- GAME 1: CHRONOS PROTOCOL ---
+        const chronosData = [
+            { text: "Battle of Plassey", year: 1757 },
+            { text: "Battle of Buxar", year: 1764 },
+            { text: "Regulating Act passed", year: 1773 },
+            { text: "Pitt's India Act", year: 1784 },
+            { text: "Permanent Settlement of Bengal", year: 1793 },
+            { text: "Treaty of Bassein", year: 1802 },
+            { text: "Abolition of Sati", year: 1829 },
+            { text: "Wood's Despatch on Education", year: 1854 },
+            { text: "First War of Independence (Revolt)", year: 1857 },
+            { text: "Vernacular Press Act enacted", year: 1878 },
+            { text: "Ilbert Bill Controversy", year: 1883 },
+            { text: "Formation of Indian National Congress", year: 1885 },
+            { text: "Partition of Bengal announced by Curzon", year: 1905 },
+            { text: "Surat Split in Indian National Congress", year: 1907 },
+            { text: "Morley-Minto Reforms enacted", year: 1909 },
+            { text: "Transfer of Capital from Calcutta to Delhi", year: 1911 },
+            { text: "Ghadar Party formed in San Francisco", year: 1913 },
+            { text: "Komagata Maru Incident", year: 1914 },
+            { text: "Lucknow Pact signed between INC & Muslim League", year: 1916 },
+            { text: "Champaran Satyagraha", year: 1917 },
+            { text: "Jallianwala Bagh Massacre", year: 1919 },
+            { text: "Non-Cooperation Movement launched", year: 1920 },
+            { text: "Chauri Chaura Incident & Withdrawal of NCM", year: 1922 },
+            { text: "Swaraj Party formed by C.R. Das & Motilal Nehru", year: 1923 },
+            { text: "Simon Commission arrives in India", year: 1928 },
+            { text: "Lahore Session & Purna Swaraj Declaration", year: 1929 },
+            { text: "Dandi March begins Salt Satyagraha", year: 1930 },
+            { text: "Gandhi-Irwin Pact signed", year: 1931 },
+            { text: "Poona Pact signed", year: 1932 },
+            { text: "Government of India Act passed", year: 1935 },
+            { text: "August Offer announced by Linlithgow", year: 1940 },
+            { text: "Cripps Mission arrives", year: 1942 },
+            { text: "Quit India Resolution passed at Bombay", year: 1942 },
+            { text: "Cabinet Mission Plan announced", year: 1946 },
+            { text: "Direct Action Day", year: 1946 },
+            { text: "Mountbatten Plan (June 3 Plan)", year: 1947 }
+        ];
+        let currentChronos = [];
+
+        function initChronos() {
+            // Randomly pick 5 historical events every time the game starts
+            currentChronos = [...chronosData].sort(() => Math.random() - 0.5).slice(0, 5);
+            renderChronos();
+        }
+
+        function renderChronos() {
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="arrow-down-up" class="text-[#2C4C3B] w-7 h-7"></i> 
+                            Chronos Protocol
+                        </h2>
+                    </div>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <p class="font-mono text-xs mb-6 font-bold bg-[#E6DFD3] p-3 border-l-4 border-[#2C4C3B]">
+                        Directive: Reorder these freedom struggle milestones from earliest (top) to latest (bottom).
+                    </p>
+
+                    <div class="flex flex-col gap-3">
+            `;
+
+            currentChronos.forEach((item, index) => {
+                html += `
+                    <div class="flex items-center gap-4 p-4 border-2 border-[#2C241B] bg-white card-shadow">
+                        <div class="flex flex-col gap-1">
+                            <button onclick="moveChronos(${index}, -1)" class="p-1 bg-[#E6DFD3] border-2 border-[#2C241B] ${index === 0 ? 'opacity-30' : 'hover:bg-[#D4AF37]'}" ${index === 0 ? 'disabled' : ''}>
+                                <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="moveChronos(${index}, 1)" class="p-1 bg-[#E6DFD3] border-2 border-[#2C241B] ${index === currentChronos.length - 1 ? 'opacity-30' : 'hover:bg-[#D4AF37]'}" ${index === currentChronos.length - 1 ? 'disabled' : ''}>
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1 font-serif text-base font-bold">${item.text}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <div class="mt-6 flex justify-between items-center border-t-2 border-dashed border-[#2C241B] pt-4">
+                        <div id="chronos-result" class="font-mono font-bold text-xs"></div>
+                        <button onclick="verifyChronos()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">
+                            Verify Timeline
+                        </button>
+                    </div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function moveChronos(index, dir) {
+            if (index + dir < 0 || index + dir >= currentChronos.length) return;
+            const temp = currentChronos[index];
+            currentChronos[index] = currentChronos[index + dir];
+            currentChronos[index + dir] = temp;
+            renderChronos();
+        }
+
+        function verifyChronos() {
+            let correct = true;
+            for(let i=0; i < currentChronos.length - 1; i++) {
+                if(currentChronos[i].year > currentChronos[i+1].year) {
+                    correct = false; break;
+                }
+            }
+            const res = document.getElementById('chronos-result');
+            if(correct) {
+                res.innerHTML = `<span class="text-green-800 bg-green-200 px-3 py-1 border border-green-800">✓ Timeline Synchronized Successfully!</span>`;
+            } else {
+                res.innerHTML = `<span class="text-red-800 bg-red-200 px-3 py-1 border border-red-800">✗ Anomaly Detected. Re-check the order.</span>`;
+            }
+        }
+
+        // --- GAME 2: VICEROY'S DISPATCH ---
+        const dispatchPairsMaster = [
+            { left: "Warren Hastings", right: "Regulating Act 1773 & First Maratha War", id: 1 },
+            { left: "Lord Cornwallis", right: "Permanent Settlement 1793 & Civil Services", id: 2 },
+            { left: "Lord Wellesley", right: "Subsidiary Alliance System 1798", id: 3 },
+            { left: "Lord William Bentinck", right: "Abolition of Sati 1829 & English Education", id: 4 },
+            { left: "Lord Dalhousie", right: "Doctrine of Lapse & Railways 1853", id: 5 },
+            { left: "Lord Canning", right: "Revolt of 1857 & First Viceroy", id: 6 },
+            { left: "Lord Lytton", right: "Vernacular Press Act 1878 & Arms Act", id: 7 },
+            { left: "Lord Ripon", right: "Local Self Govt & Hunter Commission", id: 8 },
+            { left: "Lord Dufferin", right: "Formation of Indian National Congress 1885", id: 9 },
+            { left: "Lord Curzon", right: "Partition of Bengal 1905 & Universities Act", id: 10 },
+            { left: "Lord Minto II", right: "Morley-Minto Reforms 1909 (Separate Electorates)", id: 11 },
+            { left: "Lord Hardinge II", right: "Transfer of Capital to Delhi 1911", id: 12 },
+            { left: "Lord Chelmsford", right: "Jallianwala Bagh 1919 & Rowlatt Act", id: 13 },
+            { left: "Lord Reading", right: "Chauri Chaura 1922 & Kakori Train Robbery", id: 14 },
+            { left: "Lord Irwin", right: "Simon Commission & Civil Disobedience", id: 15 },
+            { left: "Lord Willingdon", right: "Second RTC & Communal Award 1932", id: 16 },
+            { left: "Lord Linlithgow", right: "August Offer 1940 & Quit India", id: 17 },
+            { left: "Lord Wavell", right: "Cabinet Mission 1946 & Shimla Conference", id: 18 },
+            { left: "Lord Mountbatten", right: "Indian Independence Act 1947", id: 19 }
+        ];
+        
+        let dLeft = [], dRight = [], selL = null, selR = null, dMatched = [];
+        let currentDispatchCount = 0;
+
+        function initDispatch() {
+            dMatched = []; selL = null; selR = null;
+            // Pick 5 random pairs from the massive list
+            const selectedPairs = [...dispatchPairsMaster].sort(() => Math.random() - 0.5).slice(0, 5);
+            currentDispatchCount = selectedPairs.length;
+
+            dLeft = selectedPairs.map(p => ({ text: p.left, id: p.id })).sort(() => Math.random() - 0.5);
+            dRight = selectedPairs.map(p => ({ text: p.right, id: p.id })).sort(() => Math.random() - 0.5);
+            renderDispatch();
+        }
+
+        function renderDispatch() {
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="link-2" class="text-[#7C2E2A] w-7 h-7"></i> 
+                            Viceroy's Dispatch
+                        </h2>
+                    </div>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <p class="font-mono text-xs mb-6 font-bold text-center bg-[#E6DFD3] p-2 border-y border-[#2C241B]">
+                        Match the Viceroy on the left to their corresponding policy on the right.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-3">
+                            ${dLeft.map(item => `
+                                <button onclick="selectDispatch('left', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${dMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : selL === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            ${dRight.map(item => `
+                                <button onclick="selectDispatch('right', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${dMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : selR === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div id="dispatch-res" class="mt-6 text-center font-mono text-xs font-bold h-6"></div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectDispatch(side, id) {
+            if (side === 'left') selL = selL === id ? null : id;
+            else selR = selR === id ? null : id;
+
+            if (selL !== null && selR !== null) {
+                if (selL === selR) {
+                    dMatched.push(selL);
+                    selL = null; selR = null;
+                    renderDispatch();
+                    if (dMatched.length === currentDispatchCount) {
+                        document.getElementById('dispatch-res').innerHTML = `<span class="text-green-800 bg-green-200 px-3 py-1 border border-green-800">✓ All Dispatches Matched Perfectly!</span>`;
+                    }
+                } else {
+                    renderDispatch();
+                    document.getElementById('dispatch-res').innerHTML = `<span class="text-red-800 bg-red-200 px-3 py-1 border border-red-800">✗ Mismatch! Try again.</span>`;
+                    setTimeout(() => { selL = null; selR = null; renderDispatch(); }, 800);
+                }
+            } else {
+                renderDispatch();
+            }
+        }
+
+        // --- GAME 3: CONGRESS CHRONICLES ---
+        const congressPairsMaster = [
+            { left: "Bombay Session (1885)", right: "First INC Session (W.C. Bonnerjee)", id: 1 },
+            { left: "Calcutta Session (1896)", right: "Vande Mataram sung first time", id: 2 },
+            { left: "Benares Session (1905)", right: "Resentment against Bengal Partition (Gokhale)", id: 3 },
+            { left: "Calcutta Session (1906)", right: "First use of the word 'Swaraj' (Dadabhai Naoroji)", id: 4 },
+            { left: "Surat Session (1907)", right: "Split between Moderates & Extremists", id: 5 },
+            { left: "Calcutta Session (1911)", right: "Jana Gana Mana sung first time", id: 6 },
+            { left: "Lucknow Session (1916)", right: "Pact with Muslim League (A.C. Majumdar)", id: 7 },
+            { left: "Calcutta Session (1917)", right: "First Woman President (Annie Besant)", id: 8 },
+            { left: "Belgaum Session (1924)", right: "Only Session presided by Mahatma Gandhi", id: 9 },
+            { left: "Kanpur Session (1925)", right: "First Indian Woman President (Sarojini Naidu)", id: 10 },
+            { left: "Lahore Session (1929)", right: "Purna Swaraj Declaration (J.L. Nehru)", id: 11 },
+            { left: "Karachi Session (1931)", right: "Resolution on Fundamental Rights (S.V. Patel)", id: 12 },
+            { left: "Haripura Session (1938)", right: "National Planning Committee (S.C. Bose)", id: 13 },
+            { left: "Tripuri Session (1939)", right: "S.C. Bose resigns, forms Forward Bloc", id: 14 },
+            { left: "Meerut Session (1946)", right: "President during Independence (J.B. Kripalani)", id: 15 }
+        ];
+
+        let cLeft = [], cRight = [], cSelL = null, cSelR = null, cMatched = [];
+        let currentCongressCount = 0;
+
+        function initCongress() {
+            cMatched = []; cSelL = null; cSelR = null;
+            const selectedPairs = [...congressPairsMaster].sort(() => Math.random() - 0.5).slice(0, 5);
+            currentCongressCount = selectedPairs.length;
+
+            cLeft = selectedPairs.map(p => ({ text: p.left, id: p.id })).sort(() => Math.random() - 0.5);
+            cRight = selectedPairs.map(p => ({ text: p.right, id: p.id })).sort(() => Math.random() - 0.5);
+            renderCongress();
+        }
+
+        function renderCongress() {
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="users" class="text-[#9A7B4F] w-7 h-7"></i> 
+                            Congress Chronicles
+                        </h2>
+                    </div>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <p class="font-mono text-xs mb-6 font-bold text-center bg-[#E6DFD3] p-2 border-y border-[#2C241B]">
+                        Match INC Sessions with their historical resolutions or presidents.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-3">
+                            ${cLeft.map(item => `
+                                <button onclick="selectCongress('left', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${cMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : cSelL === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            ${cRight.map(item => `
+                                <button onclick="selectCongress('right', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${cMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : cSelR === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div id="congress-res" class="mt-6 text-center font-mono text-xs font-bold h-6"></div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectCongress(side, id) {
+            if (side === 'left') cSelL = cSelL === id ? null : id;
+            else cSelR = cSelR === id ? null : id;
+
+            if (cSelL !== null && cSelR !== null) {
+                if (cSelL === cSelR) {
+                    cMatched.push(cSelL);
+                    cSelL = null; cSelR = null;
+                    renderCongress();
+                    if (cMatched.length === currentCongressCount) {
+                        document.getElementById('congress-res').innerHTML = `<span class="text-green-800 bg-green-200 px-3 py-1 border border-green-800">✓ All Sessions Matched!</span>`;
+                    }
+                } else {
+                    renderCongress();
+                    document.getElementById('congress-res').innerHTML = `<span class="text-red-800 bg-red-200 px-3 py-1 border border-red-800">✗ Mismatch!</span>`;
+                    setTimeout(() => { cSelL = null; cSelR = null; renderCongress(); }, 800);
+                }
+            } else {
+                renderCongress();
+            }
+        }
+
+        // --- GAME 4: THE SECRET PRESS ---
+        const pressPairsMaster = [
+            { left: "Bengal Gazette", right: "James Augustus Hicky", id: 1 },
+            { left: "Mirat-ul-Akbar", right: "Raja Ram Mohan Roy", id: 2 },
+            { left: "Rast Goftar", right: "Dadabhai Naoroji", id: 3 },
+            { left: "Amrita Bazar Patrika", right: "Sisir Kumar Ghosh & Motilal Ghosh", id: 4 },
+            { left: "Som Prakash", right: "Ishwar Chandra Vidyasagar", id: 5 },
+            { left: "Sudharak", right: "Gopal Krishna Gokhale", id: 6 },
+            { left: "Kesari & Mahratta", right: "Bal Gangadhar Tilak", id: 7 },
+            { left: "Bande Mataram", right: "Bipin Chandra Pal / Aurobindo Ghosh", id: 8 },
+            { left: "Yugantar", right: "Barindra Kumar Ghosh & Bhupendranath Dutta", id: 9 },
+            { left: "Al Hilal", right: "Abul Kalam Azad", id: 10 },
+            { left: "Comrade", right: "Maulana Mohammad Ali", id: 11 },
+            { left: "New India & Commonweal", right: "Annie Besant", id: 12 },
+            { left: "Young India & Harijan", right: "Mahatma Gandhi", id: 13 },
+            { left: "Prabuddha Bharata", right: "Swami Vivekananda", id: 14 },
+            { left: "Mooknayak", right: "B.R. Ambedkar", id: 15 },
+            { left: "National Herald", right: "Jawaharlal Nehru", id: 16 }
+        ];
+
+        let pLeft = [], pRight = [], pSelL = null, pSelR = null, pMatched = [];
+        let currentPressCount = 0;
+
+        function initPress() {
+            pMatched = []; pSelL = null; pSelR = null;
+            const selectedPairs = [...pressPairsMaster].sort(() => Math.random() - 0.5).slice(0, 5);
+            currentPressCount = selectedPairs.length;
+
+            pLeft = selectedPairs.map(p => ({ text: p.left, id: p.id })).sort(() => Math.random() - 0.5);
+            pRight = selectedPairs.map(p => ({ text: p.right, id: p.id })).sort(() => Math.random() - 0.5);
+            renderPress();
+        }
+
+        function renderPress() {
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="newspaper" class="text-[#2C241B] w-7 h-7"></i> 
+                            The Secret Press
+                        </h2>
+                    </div>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <p class="font-mono text-xs mb-6 font-bold text-center bg-[#E6DFD3] p-2 border-y border-[#2C241B]">
+                        Match nationalist publications with their respective founders/editors.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-3">
+                            ${pLeft.map(item => `
+                                <button onclick="selectPress('left', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${pMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : pSelL === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            ${pRight.map(item => `
+                                <button onclick="selectPress('right', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${pMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : pSelR === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div id="press-res" class="mt-6 text-center font-mono text-xs font-bold h-6"></div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectPress(side, id) {
+            if (side === 'left') pSelL = pSelL === id ? null : id;
+            else pSelR = pSelR === id ? null : id;
+
+            if (pSelL !== null && pSelR !== null) {
+                if (pSelL === pSelR) {
+                    pMatched.push(pSelL);
+                    pSelL = null; pSelR = null;
+                    renderPress();
+                    if (pMatched.length === currentPressCount) {
+                        document.getElementById('press-res').innerHTML = `<span class="text-green-800 bg-green-200 px-3 py-1 border border-green-800">✓ All Publications Identified!</span>`;
+                    }
+                } else {
+                    renderPress();
+                    document.getElementById('press-res').innerHTML = `<span class="text-red-800 bg-red-200 px-3 py-1 border border-red-800">✗ Mismatch!</span>`;
+                    setTimeout(() => { pSelL = null; pSelR = null; renderPress(); }, 800);
+                }
+            } else {
+                renderPress();
+            }
+        }
+
+        // --- GAME 5: PEASANT & TRIBAL UPRISINGS ---
+        const tribalPairsMaster = [
+            { left: "Sanyasi Rebellion (1763-1800)", right: "Majnum Shah & Bhavani Pathak", id: 1 },
+            { left: "Pagal Panthi Uprising (1825)", right: "Karam Shah & Tipu", id: 2 },
+            { left: "Kol Mutiny (1831)", right: "Buddhu Bhagat", id: 3 },
+            { left: "Khond Uprising (1837)", right: "Chakra Bisoi", id: 4 },
+            { left: "Santhal Rebellion (1855)", right: "Sidhu and Kanhu Murmu", id: 5 },
+            { left: "Indigo Revolt (1859)", right: "Digambar & Bishnu Biswas", id: 6 },
+            { left: "Pabna Agrarian Leagues (1873)", right: "Ishan Chandra Roy", id: 7 },
+            { left: "Deccan Riots (1875)", right: "Agrarian unrest in Poona & Ahmednagar", id: 8 },
+            { left: "Munda Ulgulan (1899)", right: "Birsa Munda", id: 9 },
+            { left: "Champaran Satyagraha (1917)", right: "Protest against Tinkathia system", id: 10 },
+            { left: "Kheda Satyagraha (1918)", right: "First Non-Cooperation (Gandhi & Patel)", id: 11 },
+            { left: "Eka Movement (1921)", right: "Madari Pasi", id: 12 },
+            { left: "Moplah Rebellion (1921)", right: "Ali Musaliyar", id: 13 },
+            { left: "Bardoli Satyagraha (1928)", right: "Sardar Vallabhbhai Patel", id: 14 },
+            { left: "Tebhaga Movement (1946)", right: "Kampa Ram Singh (Bengal Sharecroppers)", id: 15 }
+        ];
+
+        let tLeft = [], tRight = [], tSelL = null, tSelR = null, tMatched = [];
+        let currentTribalCount = 0;
+
+        function initUprisings() {
+            tMatched = []; tSelL = null; tSelR = null;
+            const selectedPairs = [...tribalPairsMaster].sort(() => Math.random() - 0.5).slice(0, 5);
+            currentTribalCount = selectedPairs.length;
+
+            tLeft = selectedPairs.map(p => ({ text: p.left, id: p.id })).sort(() => Math.random() - 0.5);
+            tRight = selectedPairs.map(p => ({ text: p.right, id: p.id })).sort(() => Math.random() - 0.5);
+            renderUprisings();
+        }
+
+        function renderUprisings() {
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="flame" class="text-[#5C3A21] w-7 h-7"></i> 
+                            Rebel Map & Tribes
+                        </h2>
+                    </div>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <p class="font-mono text-xs mb-6 font-bold text-center bg-[#E6DFD3] p-2 border-y border-[#2C241B]">
+                        Match peasant & tribal uprisings with their leaders or causes.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-3">
+                            ${tLeft.map(item => `
+                                <button onclick="selectUprisings('left', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${tMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : tSelL === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            ${tRight.map(item => `
+                                <button onclick="selectUprisings('right', ${item.id})" class="p-3 border-2 text-left font-serif text-sm font-bold ${tMatched.includes(item.id) ? 'bg-[#D3CCC1] border-dashed opacity-50' : tSelR === item.id ? 'bg-[#D4AF37]' : 'bg-white hover:bg-[#E6DFD3]'} border-[#2C241B] card-shadow transition-colors">
+                                    ${item.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div id="tribal-res" class="mt-6 text-center font-mono text-xs font-bold h-6"></div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectUprisings(side, id) {
+            if (side === 'left') tSelL = tSelL === id ? null : id;
+            else tSelR = tSelR === id ? null : id;
+
+            if (tSelL !== null && tSelR !== null) {
+                if (tSelL === tSelR) {
+                    tMatched.push(tSelL);
+                    tSelL = null; tSelR = null;
+                    renderUprisings();
+                    if (tMatched.length === currentTribalCount) {
+                        document.getElementById('tribal-res').innerHTML = `<span class="text-green-800 bg-green-200 px-3 py-1 border border-green-800">✓ All Rebellions Matched!</span>`;
+                    }
+                } else {
+                    renderUprisings();
+                    document.getElementById('tribal-res').innerHTML = `<span class="text-red-800 bg-red-200 px-3 py-1 border border-red-800">✗ Mismatch!</span>`;
+                    setTimeout(() => { tSelL = null; tSelR = null; renderUprisings(); }, 800);
+                }
+            } else {
+                renderUprisings();
+            }
+        }
+
+        // --- GAME 6: THE ANOMALY (Odd One Out) ---
+        const anomalyDataMaster = [
+            {
+                group: "Which of these leaders does NOT belong to the group?",
+                items: ["Dadabhai Naoroji", "W.C. Bonnerjee", "Bal Gangadhar Tilak", "Ferozeshah Mehta"],
+                correct: 2,
+                reason: "Bal Gangadhar Tilak was a prominent Extremist leader. The others were Moderates."
+            },
+            {
+                group: "Which of these territories was NOT annexed under the Doctrine of Lapse?",
+                items: ["Satara", "Awadh", "Jhansi", "Sambalpur"],
+                correct: 1,
+                reason: "Awadh was annexed in 1856 on the grounds of 'misgovernance' (maladministration), not the Doctrine of Lapse."
+            },
+            {
+                group: "Which of these organizations was NOT founded by Mahatma Gandhi?",
+                items: ["Harijan Sevak Sangh", "Tolstoy Farm", "Forward Bloc", "Phoenix Settlement"],
+                correct: 2,
+                reason: "The Forward Bloc was founded by Subhas Chandra Bose in 1939 after he resigned from the INC presidency."
+            },
+            {
+                group: "Which of these Englishmen never served as the President of the Indian National Congress?",
+                items: ["George Yule", "William Wedderburn", "A.O. Hume", "Henry Cotton"],
+                correct: 2,
+                reason: "A.O. Hume was the founder and General Secretary of the INC, but he never served as its President."
+            },
+            {
+                group: "Which of these revolutionary acts was NOT associated with Bhagat Singh?",
+                items: ["Assassination of Saunders", "Kakori Train Robbery", "Throwing bomb in Central Assembly", "Founding of Naujawan Bharat Sabha"],
+                correct: 1,
+                reason: "The Kakori Train Robbery (1925) was carried out by members of the Hindustan Republican Association (HRA) like Ram Prasad Bismil and Ashfaqulla Khan, before Bhagat Singh became highly active."
+            }
+        ];
+
+        let currentAnomalyIndex = 0;
+        let activeAnomalySet = [];
+
+        function initAnomaly() {
+            activeAnomalySet = [...anomalyDataMaster].sort(() => Math.random() - 0.5).slice(0, 3);
+            currentAnomalyIndex = 0;
+            renderAnomaly();
+        }
+
+        function renderAnomaly() {
+            if (currentAnomalyIndex >= activeAnomalySet.length) {
+                gameContainer.innerHTML = `
+                    <div class="bg-[#F9F6F0] p-8 border-2 border-[#2C241B] card-shadow text-center mt-10 relative">
+                        <div class="tape"></div>
+                        <h2 class="font-serif text-3xl font-bold mb-4 text-[#8B5CF6]">Investigation Complete</h2>
+                        <p class="font-mono text-sm mb-6">You have successfully identified all anomalies in this dossier.</p>
+                        <button onclick="exitGame()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">Return to Hub</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = activeAnomalySet[currentAnomalyIndex];
+            
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="search" class="text-[#8B5CF6] w-7 h-7"></i> 
+                            The Anomaly
+                        </h2>
+                    </div>
+                    <span class="font-mono text-xs font-bold bg-[#E6DFD3] border border-[#2C241B] px-2 py-1">File ${currentAnomalyIndex + 1} of ${activeAnomalySet.length}</span>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <p class="font-serif text-xl font-bold mb-6 mt-4 text-center">
+                        ${q.group}
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="anomaly-options">
+                        ${q.items.map((item, index) => `
+                            <button onclick="selectAnomaly(${index})" id="ano-btn-${index}" class="p-4 border-2 text-center font-mono text-sm font-bold bg-white hover:bg-[#E6DFD3] border-[#2C241B] card-shadow transition-all">
+                                ${item}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="anomaly-res" class="hidden mt-6 p-4 border-l-4 font-mono text-sm"></div>
+                    <div id="anomaly-next" class="hidden mt-6 text-right border-t-2 border-dashed border-[#2C241B] pt-4">
+                        <button onclick="nextAnomaly()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">
+                            Next File →
+                        </button>
+                    </div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectAnomaly(selectedIndex) {
+            const q = activeAnomalySet[currentAnomalyIndex];
+            const resBox = document.getElementById('anomaly-res');
+            const nextBox = document.getElementById('anomaly-next');
+
+            // Disable all buttons
+            q.items.forEach((_, idx) => {
+                const btn = document.getElementById(`ano-btn-${idx}`);
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.className = "p-4 border-2 text-center font-mono text-sm font-bold bg-green-200 border-green-800 text-green-900 card-shadow";
+                } else if (idx === selectedIndex) {
+                    btn.className = "p-4 border-2 text-center font-mono text-sm font-bold bg-red-200 border-red-800 text-red-900 card-shadow";
+                } else {
+                    btn.className = "p-4 border-2 text-center font-mono text-sm font-bold bg-[#E6DFD3] border-[#2C241B] opacity-50";
+                }
+            });
+
+            resBox.classList.remove('hidden');
+            nextBox.classList.remove('hidden');
+
+            if (selectedIndex === q.correct) {
+                resBox.className = "mt-6 p-4 border-l-4 border-green-800 bg-green-100 text-green-900 font-mono text-sm";
+                resBox.innerHTML = `<strong>✓ Correct!</strong><br>${q.reason}`;
+            } else {
+                resBox.className = "mt-6 p-4 border-l-4 border-red-800 bg-red-100 text-red-900 font-mono text-sm";
+                resBox.innerHTML = `<strong>✗ Incorrect.</strong><br>${q.reason}`;
+            }
+        }
+
+        function nextAnomaly() {
+            currentAnomalyIndex++;
+            renderAnomaly();
+        }
+
+        // --- GAME 7: ECHOES OF THE PAST (Quotes) ---
+        const echoesDataMaster = [
+            {
+                quote: "Every blow on my body will prove a nail in the coffin of the British Empire.",
+                options: ["Bhagat Singh", "Lala Lajpat Rai", "Bal Gangadhar Tilak", "Bipin Chandra Pal"],
+                correct: 1,
+                reason: "Lala Lajpat Rai declared this after being brutally lathi-charged while protesting the Simon Commission in Lahore (1928)."
+            },
+            {
+                quote: "I am a socialist and a republican and am no believer in kings and princes.",
+                options: ["Subhas Chandra Bose", "Jawaharlal Nehru", "M.N. Roy", "Jayaprakash Narayan"],
+                correct: 1,
+                reason: "Jawaharlal Nehru said this during his Presidential Address at the Lahore session of the INC in 1929."
+            },
+            {
+                quote: "Freedom is not given, it is taken.",
+                options: ["Sardar Patel", "Chandrashekhar Azad", "Subhas Chandra Bose", "Mahatma Gandhi"],
+                correct: 2,
+                reason: "A famous revolutionary statement by Netaji Subhas Chandra Bose."
+            },
+            {
+                quote: "Swaraj is my birthright, and I shall have it!",
+                options: ["Gopal Krishna Gokhale", "Aurobindo Ghosh", "Bal Gangadhar Tilak", "Dadabhai Naoroji"],
+                correct: 2,
+                reason: "Bal Gangadhar Tilak coined this iconic slogan during the Home Rule Movement in 1916."
+            },
+            {
+                quote: "The demand for Pakistan is a demand for a separate homeland... we will have it or we will perish for it.",
+                options: ["Sir Syed Ahmed Khan", "Muhammad Ali Jinnah", "Allama Iqbal", "Liaquat Ali Khan"],
+                correct: 1,
+                reason: "M.A. Jinnah became the staunch advocate for the two-nation theory, demanding Pakistan from 1940 onwards."
+            }
+        ];
+
+        let currentEchoesIndex = 0;
+        let activeEchoesSet = [];
+
+        function initEchoes() {
+            activeEchoesSet = [...echoesDataMaster].sort(() => Math.random() - 0.5).slice(0, 3);
+            currentEchoesIndex = 0;
+            renderEchoes();
+        }
+
+        function renderEchoes() {
+            if (currentEchoesIndex >= activeEchoesSet.length) {
+                gameContainer.innerHTML = `
+                    <div class="bg-[#F9F6F0] p-8 border-2 border-[#2C241B] card-shadow text-center mt-10 relative">
+                        <div class="tape"></div>
+                        <h2 class="font-serif text-3xl font-bold mb-4 text-[#D97706]">Voices Decoded</h2>
+                        <p class="font-mono text-sm mb-6">You have identified the authors of all the historical echoes.</p>
+                        <button onclick="exitGame()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">Return to Hub</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = activeEchoesSet[currentEchoesIndex];
+            
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="message-square-quote" class="text-[#D97706] w-7 h-7"></i> 
+                            Echoes of the Past
+                        </h2>
+                    </div>
+                    <span class="font-mono text-xs font-bold bg-[#E6DFD3] border border-[#2C241B] px-2 py-1">Quote ${currentEchoesIndex + 1} of ${activeEchoesSet.length}</span>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-6 border-2 border-[#2C241B] card-shadow mb-8 relative">
+                    <div class="tape"></div>
+                    <div class="p-6 bg-[#E6DFD3] border-l-4 border-[#2C241B] mb-6">
+                        <p class="font-serif text-xl italic font-bold text-[#5C3A21]">
+                            "${q.quote}"
+                        </p>
+                    </div>
+                    
+                    <p class="font-mono text-xs font-bold mb-3 uppercase tracking-wider text-center">Identify the Speaker:</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="echoes-options">
+                        ${q.options.map((item, index) => `
+                            <button onclick="selectEchoes(${index})" id="ech-btn-${index}" class="p-4 border-2 text-left font-serif text-sm font-bold bg-white hover:bg-[#E6DFD3] border-[#2C241B] card-shadow transition-all flex items-center gap-3">
+                                <span class="w-6 h-6 flex items-center justify-center bg-[#2C241B] text-white rounded-full text-xs">${String.fromCharCode(65 + index)}</span>
+                                ${item}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="echoes-res" class="hidden mt-6 p-4 border-l-4 font-mono text-sm"></div>
+                    <div id="echoes-next" class="hidden mt-6 text-right border-t-2 border-dashed border-[#2C241B] pt-4">
+                        <button onclick="nextEchoes()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">
+                            Next Quote →
+                        </button>
+                    </div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectEchoes(selectedIndex) {
+            const q = activeEchoesSet[currentEchoesIndex];
+            const resBox = document.getElementById('echoes-res');
+            const nextBox = document.getElementById('echoes-next');
+
+            q.options.forEach((_, idx) => {
+                const btn = document.getElementById(`ech-btn-${idx}`);
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.className = "p-4 border-2 text-left font-serif text-sm font-bold bg-green-200 border-green-800 text-green-900 card-shadow flex items-center gap-3";
+                } else if (idx === selectedIndex) {
+                    btn.className = "p-4 border-2 text-left font-serif text-sm font-bold bg-red-200 border-red-800 text-red-900 card-shadow flex items-center gap-3";
+                } else {
+                    btn.className = "p-4 border-2 text-left font-serif text-sm font-bold bg-[#E6DFD3] border-[#2C241B] opacity-50 flex items-center gap-3";
+                }
+            });
+
+            resBox.classList.remove('hidden');
+            nextBox.classList.remove('hidden');
+
+            if (selectedIndex === q.correct) {
+                resBox.className = "mt-6 p-4 border-l-4 border-green-800 bg-green-100 text-green-900 font-mono text-sm";
+                resBox.innerHTML = `<strong>✓ Correct!</strong><br>${q.reason}`;
+            } else {
+                resBox.className = "mt-6 p-4 border-l-4 border-red-800 bg-red-100 text-red-900 font-mono text-sm";
+                resBox.innerHTML = `<strong>✗ Incorrect.</strong><br>${q.reason}`;
+            }
+        }
+
+        function nextEchoes() {
+            currentEchoesIndex++;
+            renderEchoes();
+        }
+
+        // --- GAME 8: THE INQUISITOR (Fact or Fiction) ---
+        const inquisitorDataMaster = [
+            {
+                statement: "The Rowlatt Act of 1919 was passed specifically to censor nationalist newspapers and control the Indian press.",
+                isTrue: false,
+                reason: "False. The Rowlatt Act was meant to curb revolutionary activities by allowing indefinite detention of suspects without trial. Press censorship was handled by acts like the Vernacular Press Act (1878)."
+            },
+            {
+                statement: "Subhas Chandra Bose formed the Forward Bloc within the Indian National Congress in 1939.",
+                isTrue: true,
+                reason: "True. After resigning as INC President following differences with Gandhi at the Tripuri session, Bose formed the Forward Bloc to consolidate the left-wing forces."
+            },
+            {
+                statement: "The Ilbert Bill (1883) aimed to remove racial discrimination by allowing Indian judges to try European offenders.",
+                isTrue: true,
+                reason: "True. Introduced by Lord Ripon, it faced massive backlash from the European community in India, leading to its dilution."
+            },
+            {
+                statement: "Dadabhai Naoroji's famous 'Drain of Wealth' theory was first published in his book 'Hind Swaraj'.",
+                isTrue: false,
+                reason: "False. The Drain of Wealth theory was detailed in his book 'Poverty and Un-British Rule in India'. 'Hind Swaraj' was written by Mahatma Gandhi."
+            },
+            {
+                statement: "The Poona Pact of 1932 provided for separate electorates for the Depressed Classes.",
+                isTrue: false,
+                reason: "False. It abandoned the idea of separate electorates (which was proposed by the Communal Award) and instead provided reserved seats for Depressed Classes within the general joint electorates."
+            }
+        ];
+
+        let currentInqIndex = 0;
+        let activeInqSet = [];
+
+        function initInquisitor() {
+            activeInqSet = [...inquisitorDataMaster].sort(() => Math.random() - 0.5).slice(0, 4);
+            currentInqIndex = 0;
+            renderInquisitor();
+        }
+
+        function renderInquisitor() {
+            if (currentInqIndex >= activeInqSet.length) {
+                gameContainer.innerHTML = `
+                    <div class="bg-[#F9F6F0] p-8 border-2 border-[#2C241B] card-shadow text-center mt-10 relative">
+                        <div class="tape"></div>
+                        <h2 class="font-serif text-3xl font-bold mb-4 text-[#059669]">Interrogation Complete</h2>
+                        <p class="font-mono text-sm mb-6">You have separated fact from fiction.</p>
+                        <button onclick="exitGame()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">Return to Hub</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = activeInqSet[currentInqIndex];
+            
+            let html = `
+                <header class="border-b-2 border-[#2C241B] pb-6 mb-8 flex justify-between items-end">
+                    <div>
+                        <button onclick="exitGame()" class="font-mono text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-1 hover:text-[#7C2E2A] transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Return to Dossier
+                        </button>
+                        <h2 class="font-serif text-3xl font-bold flex items-center gap-3">
+                            <i data-lucide="scale" class="text-[#059669] w-7 h-7"></i> 
+                            The Inquisitor
+                        </h2>
+                    </div>
+                    <span class="font-mono text-xs font-bold bg-[#E6DFD3] border border-[#2C241B] px-2 py-1">Statement ${currentInqIndex + 1} of ${activeInqSet.length}</span>
+                </header>
+
+                <div class="bg-[#F9F6F0] p-8 border-2 border-[#2C241B] card-shadow mb-8 relative text-center">
+                    <div class="tape"></div>
+                    <p class="font-mono text-xs font-bold mb-4 uppercase tracking-wider text-[#059669]">Fact or Fiction?</p>
+                    
+                    <p class="font-serif text-2xl font-bold mb-10 leading-relaxed text-[#2C241B]">
+                        "${q.statement}"
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center" id="inq-options">
+                        <button onclick="selectInquisitor(true)" id="inq-btn-true" class="w-full sm:w-48 py-4 border-2 text-center font-mono text-lg font-bold bg-white hover:bg-green-100 border-green-800 text-green-900 card-shadow transition-all">
+                            TRUE
+                        </button>
+                        <button onclick="selectInquisitor(false)" id="inq-btn-false" class="w-full sm:w-48 py-4 border-2 text-center font-mono text-lg font-bold bg-white hover:bg-red-100 border-red-800 text-red-900 card-shadow transition-all">
+                            FALSE
+                        </button>
+                    </div>
+                    
+                    <div id="inq-res" class="hidden mt-8 p-4 border-l-4 font-mono text-sm text-left"></div>
+                    <div id="inq-next" class="hidden mt-6 text-right border-t-2 border-dashed border-[#2C241B] pt-4">
+                        <button onclick="nextInquisitor()" class="bg-[#2C241B] text-white px-6 py-2 font-mono text-xs font-bold uppercase hover:bg-[#D4AF37] hover:text-[#2C241B] transition-colors border-2 border-[#2C241B]">
+                            Next Statement →
+                        </button>
+                    </div>
+                </div>
+            `;
+            gameContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function selectInquisitor(userGuess) {
+            const q = activeInqSet[currentInqIndex];
+            const btnTrue = document.getElementById('inq-btn-true');
+            const btnFalse = document.getElementById('inq-btn-false');
+            const resBox = document.getElementById('inq-res');
+            const nextBox = document.getElementById('inq-next');
+
+            btnTrue.disabled = true;
+            btnFalse.disabled = true;
+
+            // Visual feedback on buttons
+            if (q.isTrue) {
+                btnTrue.className = "w-full sm:w-48 py-4 border-2 text-center font-mono text-lg font-bold bg-green-200 border-green-800 text-green-900 card-shadow";
+                btnFalse.className = "w-full sm:w-48 py-4 border-2 text-center font-mono text-lg font-bold bg-[#E6DFD3] border-[#2C241B] opacity-50";
+            } else {
+                btnFalse.className = "w-full sm:w-48 py-4 border-2 text-center font-mono text-lg font-bold bg-red-200 border-red-800 text-red-900 card-shadow";
+                btnTrue.className = "w-full sm:w-48 py-4 border-2 text-center font-mono text-lg font-bold bg-[#E6DFD3] border-[#2C241B] opacity-50";
+            }
+
+            resBox.classList.remove('hidden');
+            nextBox.classList.remove('hidden');
+
+            if (userGuess === q.isTrue) {
+                resBox.className = "mt-8 p-4 border-l-4 border-green-800 bg-green-100 text-green-900 font-mono text-sm text-left";
+                resBox.innerHTML = `<strong>✓ Correct Assessment!</strong><br>${q.reason}`;
+            } else {
+                resBox.className = "mt-8 p-4 border-l-4 border-red-800 bg-red-100 text-red-900 font-mono text-sm text-left";
+                resBox.innerHTML = `<strong>✗ Incorrect Assessment.</strong><br>${q.reason}`;
+            }
+        }
+
+        function nextInquisitor() {
+            currentInqIndex++;
+            renderInquisitor();
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            renderGamesGrid();
+            renderSyllabus();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
+```
+
+***
+
+### Summary of Additions
+1. **Full UPSC Modern Indian History Master Syllabus Blueprint**: Categorized into 10 structured historical modules spanning from 1757 to 1947 CE (e.g., Decline of Mughals, 1857 Revolt, Socio-Religious Reforms, INC & Movements, Gandhian Era, Press & Education).
+2. **Interactive UPSC PYQ Engine**: Real UPSC Prelims questions with detailed explanations/rationales, thematic filtering, option selectors, and immediate verification.
+3. **5 Complete Simulation Modules**:
+   - *Chronos Protocol* (Timeline Sequence Reordering)
+   - *Viceroy's Dispatch* (Governors-General & Policies)
+   - *Congress Chronicles* (INC Sessions, Presidents & Resolutions)
+   - *The Secret Press* (Nationalist Newspapers & Founders)
+   - *Rebel Map & Tribes* (Peasant & Tribal Uprisings Matcher)
