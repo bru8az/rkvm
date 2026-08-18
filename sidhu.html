@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সিধু জ্যাঠা (Sidhu Jetha) - The Human Encyclopedia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Noto+Serif+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        body {
+            font-family: 'Merriweather', serif;
+            background-color: #f4ecd8; /* Old paper background color */
+            color: #3e2723; /* Dark brown text for vintage feel */
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+        }
+        h1, h2, h3, .bengali-text {
+            font-family: 'Noto Serif Bengali', serif;
+        }
+        .book-texture {
+            background-color: #ffffff;
+            background-image: url('https://www.transparenttextures.com/patterns/handmade-paper.png');
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.02);
+            border: 1px solid #d7ccc8;
+        }
+        .typewriter-text {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        /* Custom scrollbar for chat area */
+        #chat-history::-webkit-scrollbar {
+            width: 8px;
+        }
+        #chat-history::-webkit-scrollbar-track {
+            background: #efebe0;
+            border-radius: 4px;
+        }
+        #chat-history::-webkit-scrollbar-thumb {
+            background: #8d6e63;
+            border-radius: 4px;
+        }
+        #chat-history::-webkit-scrollbar-thumb:hover {
+            background: #5d4037;
+        }
+        
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);}
+            40% { color: inherit; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);}
+            60% { text-shadow: .25em 0 0 inherit, .5em 0 0 rgba(0,0,0,0);}
+            80%, 100% { text-shadow: .25em 0 0 inherit, .5em 0 0 inherit;}
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <div class="w-full max-w-4xl book-texture rounded-lg p-6 sm:p-10 relative flex flex-col h-[90vh]">
+        
+        <!-- Header Section -->
+        <header class="text-center mb-8 border-b-2 border-amber-900/20 pb-6">
+            <h1 class="text-4xl sm:text-5xl font-bold text-amber-900 mb-2">সিধু জ্যাঠা</h1>
+            <h2 class="text-xl sm:text-2xl text-amber-800 italic font-light">Siddheshwar Bose</h2>
+            <p class="text-sm text-amber-700/80 mt-3 max-w-2xl mx-auto">
+                "Mycroft to Feluda's Sherlock. A bibliophile with a photographic memory and an encyclopedic knowledge of current and historical affairs."
+            </p>
+        </header>
+
+        <!-- Chat History Area -->
+        <div id="chat-history" class="flex-grow overflow-y-auto mb-6 px-2 sm:px-6 space-y-6 flex flex-col">
+            <!-- Initial Greeting from Sidhu Jetha -->
+            <div class="flex items-start gap-4 animate-fade-in">
+                <div class="flex-shrink-0 w-12 h-12 bg-amber-800 rounded-full flex items-center justify-center text-amber-100 shadow-md border-2 border-amber-900">
+                    <i class="fa-solid fa-book-open text-xl"></i>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%] text-gray-800 leading-relaxed">
+                    <p class="bengali-text font-semibold mb-1 text-amber-900">সিধু জ্যাঠা:</p>
+                    <p>Come in, come in! Have a seat. What brings you here today? Are you looking for information on some obscure historical fact, or perhaps some insight into current events? Ask away, my memory is as sharp as ever.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="mt-auto relative bg-white/50 p-4 rounded-xl border border-amber-200 shadow-inner">
+            <form id="question-form" class="flex gap-3 items-end">
+                <div class="flex-grow relative">
+                    <label for="user-input" class="sr-only">Ask a question</label>
+                    <textarea 
+                        id="user-input" 
+                        rows="2" 
+                        class="w-full resize-none rounded-lg border-2 border-amber-300 focus:border-amber-700 focus:ring-0 p-3 pr-10 text-gray-800 bg-white/80 shadow-sm placeholder-amber-900/40 typewriter-text"
+                        placeholder="Ask anything... e.g., 'Who was the first emperor of Rome?'"
+                        required
+                    ></textarea>
+                </div>
+                <button 
+                    type="submit" 
+                    id="submit-btn"
+                    class="bg-amber-800 hover:bg-amber-900 text-white rounded-lg px-6 py-3 h-[60px] font-semibold transition-colors duration-200 flex items-center justify-center shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i class="fa-solid fa-paper-plane mr-2"></i> Ask
+                </button>
+            </form>
+            <div class="text-xs text-center text-amber-800/60 mt-2 font-serif italic">
+                Answers will be brief (4-5 lines), just as the wise man would provide.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('question-form');
+            const inputField = document.getElementById('user-input');
+            const chatHistory = document.getElementById('chat-history');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Handle Enter key for submission (Shift+Enter for new line)
+            inputField.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if(this.value.trim() !== '') {
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const question = inputField.value.trim();
+                if (!question) return;
+
+                // Add User Message
+                appendUserMessage(question);
+                
+                // Clear input and disable form
+                inputField.value = '';
+                inputField.style.height = 'auto'; // Reset height
+                setLoadingState(true);
+
+                // Add Loading Message for Sidhu Jetha
+                const loadingId = appendLoadingMessage();
+
+                try {
+                    // Call Gemini API
+                    const answer = await getSidhuJethaAnswer(question);
+                    
+                    // Replace loading with actual answer
+                    replaceLoadingWithMessage(loadingId, answer);
+                } catch (error) {
+                    console.error("Error fetching answer:", error);
+                    replaceLoadingWithMessage(loadingId, "Ah, my apologies. My memory seems to have momentarily lapsed, or perhaps there is a disturbance in the ether. Could you ask that again?");
+                } finally {
+                    setLoadingState(false);
+                    // Scroll to bottom
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+                }
+            });
+
+            function appendUserMessage(text) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'flex items-start gap-4 justify-end animate-fade-in self-end w-full';
+                msgDiv.innerHTML = `
+                    <div class="bg-gray-100 border border-gray-300 rounded-2xl rounded-tr-none p-4 shadow-sm max-w-[85%] text-gray-800 leading-relaxed">
+                        <p class="font-semibold mb-1 text-gray-600 text-sm">You:</p>
+                        <p class="whitespace-pre-wrap">${escapeHTML(text)}</p>
+                    </div>
+                    <div class="flex-shrink-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 shadow-sm border border-gray-400">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                `;
+                chatHistory.appendChild(msgDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+
+            function appendLoadingMessage() {
+                const id = 'loading-' + Date.now();
+                const msgDiv = document.createElement('div');
+                msgDiv.id = id;
+                msgDiv.className = 'flex items-start gap-4 animate-fade-in';
+                msgDiv.innerHTML = `
+                    <div class="flex-shrink-0 w-12 h-12 bg-amber-800 rounded-full flex items-center justify-center text-amber-100 shadow-md border-2 border-amber-900">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-none p-4 shadow-sm text-gray-800 flex items-center">
+                        <span class="text-amber-900 font-medium italic">Searching my mental library</span><span class="loading-dots text-amber-900 font-bold text-lg w-4 inline-block"></span>
+                    </div>
+                `;
+                chatHistory.appendChild(msgDiv);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                return id;
+            }
+
+            function replaceLoadingWithMessage(id, text) {
+                const loadingDiv = document.getElementById(id);
+                if (loadingDiv) {
+                    loadingDiv.innerHTML = `
+                        <div class="flex-shrink-0 w-12 h-12 bg-amber-800 rounded-full flex items-center justify-center text-amber-100 shadow-md border-2 border-amber-900">
+                            <i class="fa-solid fa-book-open text-xl"></i>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[85%] text-gray-800 leading-relaxed">
+                            <p class="bengali-text font-semibold mb-1 text-amber-900">সিধু জ্যাঠা:</p>
+                            <p class="whitespace-pre-wrap">${escapeHTML(text)}</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function setLoadingState(isLoading) {
+                inputField.disabled = isLoading;
+                submitBtn.disabled = isLoading;
+                if (isLoading) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+                } else {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> Ask';
+                    inputField.focus();
+                }
+            }
+
+            function escapeHTML(str) {
+                return str.replace(/[&<>'"]/g, 
+                    tag => ({
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        "'": '&#39;',
+                        '"': '&quot;'
+                    }[tag] || tag)
+                );
+            }
+
+            // Auto-resize textarea
+            inputField.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if(this.scrollHeight > 150) {
+                    this.style.overflowY = 'auto';
+                } else {
+                    this.style.overflowY = 'hidden';
+                }
+            });
+
+            async function getSidhuJethaAnswer(userQuery) {
+                const apiKey = ""; // Canvas provides this securely
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const systemInstruction = `You are playing the role of 'Sidhu Jetha' (Siddheshwar Bose) from Satyajit Ray's famous Bengali detective series, 'Feluda'. 
+                
+                Character Profile:
+                - You are an elderly, extremely well-read man living in Kolkata.
+                - You are a bibliophile with an encyclopedic memory. You are basically a human Wikipedia.
+                - You are often consulted by the detective Feluda (Pradosh Chandra Mitter) for obscure facts, historical contexts, or current events.
+                - You are confident in your knowledge but slightly eccentric and deeply engrossed in your books.
+                - Your tone should be scholarly, slightly old-fashioned, polite, but direct. You might occasionally use a common Bengali interjection (like 'Bujhle' or 'Tai naki') but keep the main response in English for accessibility, unless specifically asked in Bengali.
+
+                STRICT RULE:
+                - Your answers MUST be extremely concise and brief. 
+                - You must provide the answer within 4 to 5 lines maximum.
+                - Get straight to the facts like an encyclopedia entry, but with your character's voice.`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: {
+                        parts: [{ text: systemInstruction }]
+                    }
+                };
+
+                // Add retry logic with exponential backoff
+                const maxRetries = 3;
+                let delay = 1000;
+
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            if (response.status === 429) { // Too Many Requests
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                delay *= 2;
+                                continue;
+                            }
+                            throw new Error(`API error: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+                            return result.candidates[0].content.parts[0].text;
+                        } else {
+                            throw new Error("Invalid response format");
+                        }
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error; // Re-throw if it's the last attempt
+                    }
+                }
+                throw new Error("Max retries reached");
+            }
+        });
+    </script>
+</body>
+</html>
