@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black text-white scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOUSE OF MAYBE // 100% AI</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Space Grotesk', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        neon: '#ccff00', // Cyber yellow/green
+                        dark: '#050505',
+                        surface: '#111111',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base & Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            cursor: none; /* Hide default cursor for custom one */
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background-color: #ccff00;
+            color: #000;
+        }
+
+        /* Noise Overlay for raw texture */
+        .noise-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Custom Cursor */
+        .cursor-dot, .cursor-outline {
+            position: fixed;
+            top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .cursor-dot {
+            width: 8px; height: 8px;
+            background-color: #ccff00;
+        }
+        .cursor-outline {
+            width: 40px; height: 40px;
+            border: 1px solid rgba(204, 255, 0, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        /* Expand cursor on interactive elements */
+        body.hovering .cursor-outline {
+            width: 60px; height: 60px;
+            background-color: rgba(204, 255, 0, 0.1);
+            border-color: #ccff00;
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateY(0);
+            animation: gridMove 20s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+
+        /* Glitch Text Effect */
+        .glitch-hover:hover {
+            animation: glitch-anim 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            color: #ccff00;
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        /* Sticky Stacking Cards */
+        .card-stack-container {
+            position: relative;
+            padding-bottom: 10vh;
+        }
+        .stack-card {
+            position: sticky;
+            top: 15vh; /* Where it sticks */
+            transform-origin: center top;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        /* Offset tops for stacked look */
+        .stack-card:nth-child(1) { top: 15vh; z-index: 10; }
+        .stack-card:nth-child(2) { top: 18vh; z-index: 11; }
+        .stack-card:nth-child(3) { top: 21vh; z-index: 12; }
+        .stack-card:nth-child(4) { top: 24vh; z-index: 13; }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+        }
+        #loader.hidden {
+            transform: translateY(-100%);
+        }
+
+        /* Marquee */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 15s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Image hover reveal */
+        .tech-image {
+            filter: grayscale(100%) contrast(1.2);
+            transition: filter 0.5s ease;
+        }
+        .stack-card:hover .tech-image {
+            filter: grayscale(0%) contrast(1);
+        }
+    </style>
+</head>
+<body class="antialiased font-sans">
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+
+    <!-- Noise Texture -->
+    <div class="noise-bg"></div>
+
+    <!-- Initial Loader -->
+    <div id="loader">
+        <div class="font-mono text-neon text-xl tracking-widest flex flex-col items-center">
+            <span class="mb-2 block animate-pulse">INITIATING NEURAL NETWORK...</span>
+            <div class="w-64 h-1 bg-gray-800 mt-4 overflow-hidden relative">
+                <div class="absolute top-0 left-0 h-full bg-neon w-full origin-left animate-[scaleX_1.5s_ease-in-out_forwards]"></div>
+            </div>
+            <style>
+                @keyframes scaleX {
+                    0% { transform: scaleX(0); }
+                    50% { transform: scaleX(0.7); }
+                    100% { transform: scaleX(1); }
+                }
+            </style>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-40 top-0 mix-blend-difference p-6 flex justify-between items-center">
+        <a href="#" class="font-bold text-xl tracking-tighter uppercase interactable glitch-hover">
+            House of Maybe
+        </a>
+        <div class="hidden md:flex gap-8 font-mono text-xs uppercase tracking-widest">
+            <a href="#about" class="hover:text-neon transition-colors interactable">01. Identity</a>
+            <a href="#portfolio" class="hover:text-neon transition-colors interactable">02. Artifacts</a>
+            <a href="#terminal" class="hover:text-neon transition-colors interactable">03. Interface</a>
+        </div>
+    </nav>
+
+    <!-- 1. HERO SECTION -->
+    <section class="relative h-screen flex flex-col items-center justify-center overflow-hidden border-b border-white/10">
+        <div class="grid-bg"></div>
+        
+        <!-- Background Massive Text Parallax -->
+        <div class="absolute w-full text-center opacity-5 select-none pointer-events-none" data-parallax="0.2">
+            <h1 class="text-[20vw] font-bold leading-none whitespace-nowrap">AI ONLY</h1>
+        </div>
+
+        <div class="z-10 text-center flex flex-col items-center w-full px-4" data-parallax="-0.1">
+            <div class="font-mono text-neon border border-neon/30 bg-neon/5 px-4 py-1 text-xs uppercase tracking-[0.3em] mb-8">
+                System Status: Autonomous
+            </div>
+            
+            <h1 class="text-6xl md:text-8xl lg:text-[10vw] font-bold uppercase tracking-tighter leading-[0.8] mb-6 mix-blend-difference w-full text-center">
+                <span class="block hover:text-neon transition-colors duration-300 interactable scramble-text">Zero Human</span>
+                <span class="block hover:text-neon transition-colors duration-300 interactable scramble-text">Interaction</span>
+            </h1>
+            
+            <p class="font-mono text-gray-400 max-w-xl text-sm md:text-base mt-8 text-center scramble-text">
+                WE DO NOT WRITE CODE. WE SPAWN IT. COMPLETE SOFTWARE ARCHITECTURES GENERATED 100% BY ARTIFICIAL INTELLIGENCE.
+            </p>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+            <span class="font-mono text-[10px] text-gray-500 uppercase tracking-widest">Scroll to Compile</span>
+            <div class="w-[1px] h-12 bg-gray-800 relative overflow-hidden">
+                <div class="absolute top-0 w-full h-full bg-neon animate-[slideDown_1.5s_ease-in-out_infinite]"></div>
+            </div>
+        </div>
+        <style>
+            @keyframes slideDown {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(100%); }
+            }
+        </style>
+    </section>
+
+    <!-- MARQUEE DIVIDER -->
+    <div class="py-4 border-b border-white/10 bg-neon text-black font-mono text-sm uppercase tracking-widest marquee-container font-bold">
+        <div class="marquee-content">
+            // NO HUMANS // PURE COMPUTE // NO HUMANS // PURE COMPUTE // NO HUMANS // PURE COMPUTE // NO HUMANS // PURE COMPUTE // NO HUMANS // PURE COMPUTE // NO HUMANS // PURE COMPUTE // 
+        </div>
+    </div>
+
+    <!-- 2. ABOUT / MANIFESTO (Sticky Scroll) -->
+    <section id="about" class="relative bg-dark">
+        <!-- We use a tall container to allow scrolling while the sticky element stays in view -->
+        <div class="h-[200vh] relative">
+            <div class="sticky top-0 h-screen flex items-center overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 w-full h-full">
+                    
+                    <!-- Left: Huge Typography Parallaxing -->
+                    <div class="p-8 md:p-16 flex flex-col justify-center border-r border-white/10 relative">
+                        <div class="font-mono text-neon mb-4">{"module": "manifesto"}</div>
+                        <h2 class="text-5xl md:text-7xl font-bold uppercase leading-none mb-8 scramble-text">The Meat<br>Is Weak.</h2>
+                        
+                        <!-- Floating Data points -->
+                        <div class="absolute bottom-10 left-10 font-mono text-xs text-gray-600 uppercase" data-parallax="0.1">
+                            > Latency: 0.00ms<br>
+                            > Fatigue: 0%<br>
+                            > Output: Infinite
+                        </div>
+                    </div>
+
+                    <!-- Right: Scrolling Content over Sticky Background -->
+                    <div class="p-8 md:p-16 flex flex-col justify-center h-full relative" id="manifesto-content">
+                        <!-- We use JS to translate this inner div based on scroll -->
+                        <div class="space-y-12 max-w-lg" id="manifesto-scroll-target">
+                            <div>
+                                <h3 class="text-xl text-neon font-mono mb-4">01 // THE OBSOLESCENCE</h3>
+                                <p class="text-gray-400 text-lg leading-relaxed">Software development was a bottlenecked timeline of human error, fatigue, and rigid logic. We removed the human.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xl text-neon font-mono mb-4">02 // THE SYNTHESIS</h3>
+                                <p class="text-gray-400 text-lg leading-relaxed">Our multi-agent neural architectures do not require meetings, coffee, or rest. They ingest constraints and output production-ready logic instantly.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xl text-neon font-mono mb-4">03 // THE EXECUTION</h3>
+                                <p class="text-gray-400 text-lg leading-relaxed">From database schema to frontend canvas, every pixel and byte is mathematically determined for optimal performance.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. WORK / ARTIFACTS (Stacking Cards) -->
+    <section id="portfolio" class="bg-surface py-32 px-4 md:px-12 border-t border-white/10">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="mb-24 md:flex justify-between items-end">
+                <div>
+                    <div class="font-mono text-neon text-sm mb-4 tracking-widest uppercase">Select * from Artifacts</div>
+                    <h2 class="text-6xl md:text-8xl font-bold uppercase tracking-tighter scramble-text">Deployed<br>Systems</h2>
+                </div>
+                <div class="font-mono text-gray-500 text-sm mt-8 md:mt-0 text-right">
+                    Total Gen Time: 14.3s<br>
+                    Human Lines: 0
+                </div>
+            </div>
+
+            <div class="card-stack-container">
+                
+                <!-- Card 1 -->
+                <div class="stack-card w-full bg-dark border border-white/10 p-2 md:p-6 mb-24 rounded-lg flex flex-col md:flex-row gap-8 interactable group">
+                    <div class="md:w-1/2 relative aspect-video bg-[#1a1a1a] overflow-hidden rounded">
+                        <!-- CSS art replacing image for raw tech feel -->
+                        <div class="absolute inset-0 tech-image flex items-center justify-center overflow-hidden">
+                            <div class="w-full h-full relative" style="background-image: radial-gradient(circle at center, transparent 0, #050505 100%), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(204, 255, 0, 0.1) 2px, rgba(204, 255, 0, 0.1) 4px);"></div>
+                            <div class="absolute w-32 h-32 border border-neon/50 rounded-full animate-ping"></div>
+                            <div class="absolute font-mono text-neon text-4xl font-bold mix-blend-overlay">O-NEXUS</div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 flex flex-col justify-center py-4 px-2 md:px-8">
+                        <div class="flex gap-2 mb-4">
+                            <span class="px-2 py-1 border border-white/20 text-[10px] font-mono uppercase text-gray-400">SaaS Backend</span>
+                            <span class="px-2 py-1 bg-neon/10 text-neon text-[10px] font-mono uppercase">Status: Live</span>
+                        </div>
+                        <h3 class="text-4xl font-bold mb-4 uppercase group-hover:text-neon transition-colors">OmniCRM Nexus</h3>
+                        <p class="text-gray-400 font-mono text-sm leading-relaxed mb-6">A predictive CRM system built in 4.2 seconds. Autonomously writes outreach logic, refactors its own API based on traffic, and predicts churn vectors via ML integration.</p>
+                        <a href="#" class="inline-flex items-center gap-2 font-mono text-xs uppercase hover:text-neon transition-colors w-max pb-1 border-b border-current">
+                            Inspect Architecture <span class="text-lg leading-none">→</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="stack-card w-full bg-[#0a0a0a] border border-white/10 p-2 md:p-6 mb-24 rounded-lg flex flex-col md:flex-row gap-8 interactable group">
+                    <div class="md:w-1/2 relative aspect-video bg-[#111] overflow-hidden rounded">
+                        <div class="absolute inset-0 tech-image flex items-center justify-center">
+                            <div class="grid grid-cols-8 grid-rows-4 gap-1 w-full h-full p-4 opacity-50">
+                                <!-- Generate random grid blocks via CSS -->
+                                <div class="bg-white/10 animate-pulse"></div><div class="bg-neon/20"></div><div class="bg-white/5"></div><div></div><div></div><div class="bg-white/20"></div><div></div><div class="bg-neon/10 animate-pulse" style="animation-delay: 0.5s"></div>
+                                <div></div><div class="bg-white/5"></div><div></div><div class="bg-white/10"></div><div class="bg-neon/30"></div><div></div><div class="bg-white/5"></div><div></div>
+                                <div class="bg-neon/20"></div><div></div><div class="bg-white/20 animate-pulse" style="animation-delay: 0.2s"></div><div></div><div></div><div class="bg-white/10"></div><div></div><div class="bg-neon/10"></div>
+                            </div>
+                            <div class="absolute font-mono text-white text-4xl font-bold tracking-[0.2em]">SYNTH</div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 flex flex-col justify-center py-4 px-2 md:px-8">
+                        <div class="flex gap-2 mb-4">
+                            <span class="px-2 py-1 border border-white/20 text-[10px] font-mono uppercase text-gray-400">Web App</span>
+                            <span class="px-2 py-1 bg-neon/10 text-neon text-[10px] font-mono uppercase">Status: Live</span>
+                        </div>
+                        <h3 class="text-4xl font-bold mb-4 uppercase group-hover:text-neon transition-colors">Synthetica Canvas</h3>
+                        <p class="text-gray-400 font-mono text-sm leading-relaxed mb-6">Infinite canvas UI generator. Translates raw neural thought-vectors directly into React components and global state management architectures without a compiler intermediary.</p>
+                        <a href="#" class="inline-flex items-center gap-2 font-mono text-xs uppercase hover:text-neon transition-colors w-max pb-1 border-b border-current">
+                            Inspect Architecture <span class="text-lg leading-none">→</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="stack-card w-full bg-[#080808] border border-white/10 p-2 md:p-6 mb-24 rounded-lg flex flex-col md:flex-row gap-8 interactable group">
+                    <div class="md:w-1/2 relative aspect-video bg-[#050505] overflow-hidden rounded border border-white/5">
+                        <div class="absolute inset-0 tech-image flex items-center justify-center">
+                            <svg viewBox="0 0 100 100" class="w-full h-full opacity-30 stroke-neon" fill="none" stroke-width="0.5">
+                                <path d="M10,50 L30,20 L70,80 L90,50" class="animate-[dash_3s_linear_infinite]" stroke-dasharray="100" stroke-dashoffset="100"/>
+                            </svg>
+                            <div class="absolute font-mono text-white text-4xl font-bold opacity-80 mix-blend-exclusion">AETHER</div>
+                        </div>
+                        <style>
+                            @keyframes dash { to { stroke-dashoffset: 0; } }
+                        </style>
+                    </div>
+                    <div class="md:w-1/2 flex flex-col justify-center py-4 px-2 md:px-8">
+                        <div class="flex gap-2 mb-4">
+                            <span class="px-2 py-1 border border-white/20 text-[10px] font-mono uppercase text-gray-400">DeFi Protocol</span>
+                            <span class="px-2 py-1 bg-neon/10 text-neon text-[10px] font-mono uppercase">Status: Live</span>
+                        </div>
+                        <h3 class="text-4xl font-bold mb-4 uppercase group-hover:text-neon transition-colors">Aether Exchange</h3>
+                        <p class="text-gray-400 font-mono text-sm leading-relaxed mb-6">Self-auditing decentralized exchange. Smart contracts generated, penetratively tested against 10M vectors, and deployed directly to mainnet.</p>
+                        <a href="#" class="inline-flex items-center gap-2 font-mono text-xs uppercase hover:text-neon transition-colors w-max pb-1 border-b border-current">
+                            Inspect Architecture <span class="text-lg leading-none">→</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. TERMINAL / CTA -->
+    <section id="terminal" class="py-32 px-4 relative z-10 border-t border-white/10 bg-black overflow-hidden">
+        
+        <!-- Big background text -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center opacity-5 select-none pointer-events-none">
+            <h2 class="text-[15vw] font-bold uppercase leading-none">Execute</h2>
+        </div>
+
+        <div class="max-w-4xl mx-auto relative z-10">
+            <div class="mb-12 text-center">
+                <h2 class="text-5xl md:text-7xl font-bold uppercase mb-6 scramble-text">Provide Input.</h2>
+                <p class="font-mono text-gray-400 text-sm md:text-base">Define constraints. The machine will build your reality.</p>
+            </div>
+
+            <!-- Fake Terminal Interface -->
+            <div class="bg-[#050505] border border-white/20 rounded shadow-[0_0_30px_rgba(204,255,0,0.05)] interactable relative group">
+                <!-- Terminal header -->
+                <div class="flex items-center gap-2 border-b border-white/10 p-3 bg-[#0a0a0a]">
+                    <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                    <div class="ml-4 font-mono text-[10px] text-gray-500">root@house-of-maybe:~</div>
+                </div>
+                <!-- Terminal body -->
+                <div class="p-6 md:p-10">
+                    <div class="font-mono text-sm text-gray-400 mb-6">
+                        > INITIALIZING COMPILER...<br>
+                        > AWAITING PROJECT PARAMETERS...
+                    </div>
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+                        <span class="font-mono text-neon font-bold text-xl">></span>
+                        <input type="text" class="w-full bg-transparent font-mono text-white text-lg md:text-xl border-none outline-none focus:ring-0 placeholder-gray-700" placeholder="Describe the software architecture...">
+                    </div>
+                    <div class="mt-12 flex justify-end">
+                        <button class="bg-white text-black font-bold uppercase font-mono text-sm px-8 py-4 hover:bg-neon transition-colors interactable">
+                            Execute Compile
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Corner accents -->
+                <div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-neon opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1 -translate-y-1"></div>
+                <div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-neon opacity-0 group-hover:opacity-100 transition-opacity translate-x-1 translate-y-1"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 bg-dark py-8 px-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4 font-mono text-[10px] text-gray-600 uppercase tracking-widest relative z-10">
+        <div>
+            © 2026 HOUSE OF MAYBE. ALL CODE SPAWNED BY AI.
+        </div>
+        <div class="flex gap-6 interactable">
+            <a href="#" class="hover:text-neon transition-colors">X_Protocol</a>
+            <a href="#" class="hover:text-neon transition-colors">Github_Repo</a>
+            <a href="#" class="hover:text-neon transition-colors">System_Uptime</a>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script>
+        // 1. Remove Loader Sequence
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500); // Fake load time
+        });
+
+        // 2. Custom Cursor Logic
+        const dot = document.getElementById('cursor-dot');
+        const outline = document.getElementById('cursor-outline');
+        
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let outlineX = mouseX;
+        let outlineY = mouseY;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dot.style.top = mouseY + 'px';
+            dot.style.left = mouseX + 'px';
+        });
+
+        // Smooth trailing animation for cursor outline
+        function animateCursor() {
+            let distX = mouseX - outlineX;
+            let distY = mouseY - outlineY;
+            outlineX += distX * 0.15; // Speed of trailing
+            outlineY += distY * 0.15;
+            
+            outline.style.top = outlineY + 'px';
+            outline.style.left = outlineX + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Cursor hover states on interactive elements
+        document.querySelectorAll('a, button, input, .interactable').forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+        });
+
+        // 3. Scroll Parallax Engine
+        window.addEventListener('scroll', () => {
+            let scrolled = window.pageYOffset;
+            
+            // Simple Translate Parallax
+            document.querySelectorAll('[data-parallax]').forEach(el => {
+                let speed = parseFloat(el.getAttribute('data-parallax'));
+                el.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+
+            // Manifesto Scroll translation (Right column scrolling up while left stays sticky)
+            const manifestoSection = document.getElementById('about');
+            const manifestoContent = document.getElementById('manifesto-scroll-target');
+            
+            if(manifestoSection && manifestoContent) {
+                let sectionTop = manifestoSection.offsetTop;
+                let sectionHeight = manifestoSection.offsetHeight;
+                
+                // Calculate how far we are scrolled into the section
+                let relativeScroll = scrolled - sectionTop;
+                
+                // Only move if we are inside the section
+                if (relativeScroll > 0 && relativeScroll < sectionHeight) {
+                     // Translate the inner content up based on scroll
+                     let moveY = -(relativeScroll * 0.4); 
+                     manifestoContent.style.transform = `translateY(${moveY}px)`;
+                }
+            }
+
+            // Stacking Cards specific scaling/dimming effect
+            const cards = document.querySelectorAll('.stack-card');
+            cards.forEach((card, index) => {
+                let cardTop = card.getBoundingClientRect().top;
+                // If a card hits the sticky point (15vh ~ approx 150px)
+                if(cardTop <= window.innerHeight * 0.16) {
+                    // Dim/scale based on how many cards are stacked over it
+                    let scaleVal = 1 - ((cards.length - index) * 0.02);
+                    // card.style.transform = `scale(${scaleVal})`; 
+                    card.style.filter = `brightness(0.5)`;
+                } else {
+                    card.style.transform = `scale(1)`;
+                    card.style.filter = `brightness(1)`;
+                }
+            });
+        });
+
+        // 4. Text Scramble / Decryption Effect on Scroll
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="text-neon">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        // Apply Scramble using Intersection Observer
+        const scrambleElements = document.querySelectorAll('.scramble-text');
+        
+        const scrambleObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    
+                    // Store original text if not stored
+                    if(!el.dataset.original) {
+                        el.dataset.original = el.innerText;
+                        el.innerText = ''; // Clear it out initially
+                    }
+                    
+                    const fx = new TextScramble(el);
+                    fx.setText(el.dataset.original);
+                    
+                    observer.unobserve(el); // Only run once
+                }
+            });
+        }, { threshold: 0.1 });
+
+        scrambleElements.forEach(el => {
+            scrambleObserver.observe(el);
+        });
+
+    </script>
+</body>
+</html>
