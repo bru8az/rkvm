@@ -7,7 +7,7 @@
     <title>Flappy Orbit</title>
     <style>
         :root {
-            --bg-color: #030303; 
+            --bg-color: #040909; 
             --text-light: #e0e0e0; 
             --font-main: 'Baskerville', 'Georgia', 'Times New Roman', serif;
         }
@@ -36,7 +36,7 @@
             width: 100%;
             height: 100%;
             max-width: 600px;
-            background: #0a0a0a;
+            background: #061111;
             overflow: hidden;
             border-left: 1px solid rgba(255,255,255,0.05);
             border-right: 1px solid rgba(255,255,255,0.05);
@@ -76,7 +76,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(3, 3, 3, 0.85);
+            background: rgba(4, 9, 9, 0.85);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -194,6 +194,7 @@
         let bestScore = localStorage.getItem('voidOrbitBestScore') || 0;
         let frameCount = 0;
         let animationId;
+        let bgOffset = 0; // For parallax background
 
         // Physics variables
         let gravity = 0.5;
@@ -423,17 +424,50 @@
         }
 
         function drawBackground() {
-            // Linear gradient for a foggy horizon feel
+            // Misty blue-green forest gradient
             const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            bgGrad.addColorStop(0, '#262626'); // Dark grey top
-            bgGrad.addColorStop(0.5, '#404040'); // Lighter misty middle
-            bgGrad.addColorStop(1, '#1a1a1a'); // Dark bottom
+            bgGrad.addColorStop(0, '#0a1a1c'); // Dark murky blue-green top
+            bgGrad.addColorStop(0.5, '#193838'); // Lighter misty teal middle
+            bgGrad.addColorStop(1, '#071414'); // Dark base
 
             ctx.fillStyle = bgGrad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw floating dust
-            ctx.fillStyle = '#ffffff';
+            // Helper to draw layered forest silhouettes
+            function drawForestLayer(speedDivider, color, alpha, baseHeightOffset) {
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha;
+                ctx.beginPath();
+                
+                const amplitude = canvas.height * 0.12;
+                const baseY = canvas.height * baseHeightOffset;
+                
+                ctx.moveTo(0, canvas.height);
+                
+                const step = 25; 
+                for (let x = 0; x <= canvas.width + step; x += step) {
+                    let absoluteX = x + (bgOffset / speedDivider);
+                    
+                    // Mix of sine waves to create organic, irregular canopy of pines
+                    let wave1 = Math.sin(absoluteX * 0.012);
+                    let wave2 = Math.sin(absoluteX * 0.035);
+                    let wave3 = Math.sin(absoluteX * 0.09); // High freq for pointy tops
+                    
+                    // Subtacting the absolute value of wave3 creates sharp upward peaks (trees)
+                    let y = baseY + (wave1 * amplitude) + (wave2 * amplitude * 0.5) - (Math.abs(wave3) * amplitude * 0.4);
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Draw parallax layers (Back, Mid)
+            drawForestLayer(3.5, '#122c2d', 0.5, 0.55);
+            drawForestLayer(2.0, '#0c1e1f', 0.7, 0.75);
+
+            // Draw floating mist/fireflies
+            ctx.fillStyle = '#78ffd6'; // Soft teal mist glow
             dustParticles.forEach(dust => {
                 ctx.globalAlpha = dust.opacity;
                 ctx.beginPath();
@@ -452,8 +486,26 @@
             ctx.globalAlpha = 1.0; // Reset
         }
 
+        function drawForeground() {
+            // Foreground silhouettes framing the bottom edge for extra depth
+            ctx.fillStyle = '#020606'; 
+            ctx.beginPath();
+            const amplitude = canvas.height * 0.08;
+            const baseY = canvas.height * 0.95;
+            ctx.moveTo(0, canvas.height);
+            
+            const step = 40; 
+            for (let x = 0; x <= canvas.width + step; x += step) {
+                let absoluteX = x + (bgOffset / 0.8);
+                let wave = Math.sin(absoluteX * 0.02) + Math.sin(absoluteX * 0.07) * 0.5;
+                ctx.lineTo(x, baseY + wave * amplitude);
+            }
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.fill();
+        }
+
         function drawObstacles() {
-            ctx.fillStyle = '#000000'; // Pure black silhouettes
+            ctx.fillStyle = '#020505'; // Extremely dark silhouette, tinted to match forest
             
             obstacles.forEach(obs => {
                 // Top Pillar
@@ -487,15 +539,15 @@
             ctx.fill();
             
             // Draw melancholic glowing eye looking forward
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#78ffd6';
             ctx.globalAlpha = 0.9;
             ctx.beginPath();
             ctx.arc(player.x + player.radius/2.5, player.y - player.radius/4, player.radius/3.5, 0, Math.PI * 2);
             ctx.fill();
             
             // Subdued eye glow
-            ctx.shadowBlur = 5;
-            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#78ffd6';
             ctx.fill();
             ctx.shadowBlur = 0;
             ctx.globalAlpha = 1.0;
@@ -511,9 +563,9 @@
                 focusX, focusY, canvas.width * 0.9
             );
             
-            gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');     // Clear around player
-            gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.3)');   // Soft shadow
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.95)');    // Pitch black edges
+            gradient.addColorStop(0, 'rgba(4, 15, 15, 0)');     // Clear around player
+            gradient.addColorStop(0.4, 'rgba(4, 15, 15, 0.2)');   // Soft tinted shadow
+            gradient.addColorStop(1, 'rgba(2, 6, 6, 0.96)');    // Pitch dark teal/black edges
             
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -547,6 +599,8 @@
             if (!isPlaying) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            bgOffset += obstacleSpeed * 0.4;
             
             drawBackground();
 
@@ -587,9 +641,10 @@
                 gameOver();
             }
 
-            // Draw Order: Background -> Obstacles -> Player -> Vignette Lighting
+            // Draw Order: Background -> Obstacles -> Player -> Foreground -> Vignette Lighting
             drawObstacles();
             drawPlayer();
+            drawForeground();
             drawLighting();
 
             if (isPlaying) {
@@ -605,6 +660,7 @@
             score = 0;
             scoreDisplay.innerText = score;
             frameCount = 0;
+            bgOffset = 0;
             obstacles = [];
             debris = [];
             player.history = [];
@@ -632,6 +688,7 @@
             drawBackground();
             drawObstacles();
             updateDebris();
+            drawForeground();
             drawLighting();
             
             if (score > bestScore) {
@@ -666,6 +723,7 @@
         // Initial setup on load
         initDust();
         drawBackground();
+        drawForeground();
         drawLighting();
 
     </script>
