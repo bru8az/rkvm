@@ -1,0 +1,550 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flappy Orbit</title>
+    <style>
+        :root {
+            --bg-color: #030303; 
+            --text-light: #e0e0e0; 
+            --font-main: 'Baskerville', 'Georgia', 'Times New Roman', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            background: #0a0a0a;
+            overflow: hidden;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 20px;
+        }
+
+        #score-display {
+            font-size: 2.5rem;
+            font-weight: normal;
+            text-align: center;
+            z-index: 10;
+            opacity: 0.7;
+            letter-spacing: 2px;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 3, 3, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: opacity 1s ease;
+            pointer-events: auto;
+            backdrop-filter: blur(2px);
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            font-weight: normal;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+            letter-spacing: 6px;
+            font-weight: normal;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1rem;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 80%;
+            color: #888;
+            letter-spacing: 1px;
+            line-height: 1.6;
+        }
+
+        .score-text {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .score-text span {
+            color: #fff;
+        }
+
+        button {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 35px;
+            font-size: 1rem;
+            font-family: var(--font-main);
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-layer">
+            <div id="score-display">0</div>
+        </div>
+
+        <div id="start-screen" class="screen">
+            <h1>Flappy Orbit</h1>
+            <p>Embrace the void.<br>Tap to ascend.</p>
+            <button id="start-btn">Begin</button>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h2>Fallen</h2>
+            <div class="score-text">Score: <span id="final-score">0</span></div>
+            <div class="score-text" style="margin-bottom: 40px;">Best: <span id="best-score">0</span></div>
+            <button id="restart-btn">Awaken</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score-display');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const finalScoreEl = document.getElementById('final-score');
+        const bestScoreEl = document.getElementById('best-score');
+
+        let isPlaying = false;
+        let score = 0;
+        let bestScore = localStorage.getItem('voidOrbitBestScore') || 0;
+        let frameCount = 0;
+        let animationId;
+
+        // Physics variables
+        let gravity = 0.5;
+        let jumpPower = -8;
+        let obstacleSpeed = 2.5;
+        let gapSize = 160;
+
+        const player = {
+            x: 60,
+            y: 150,
+            radius: 10,
+            velocity: 0,
+            history: [] // For trailing shadow
+        };
+
+        let obstacles = [];
+        let dustParticles = [];
+        let debris = [];
+
+        function resizeCanvas() {
+            const container = document.getElementById('game-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // Adjust physics for feel
+            gravity = canvas.height * 0.0006;
+            jumpPower = -(canvas.height * 0.011);
+            gapSize = Math.max(140, canvas.height * 0.22);
+            obstacleSpeed = canvas.width * 0.005;
+            
+            if (player.y > canvas.height) player.y = canvas.height / 2;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function initDust() {
+            dustParticles = [];
+            for (let i = 0; i < 40; i++) {
+                dustParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() * -1) - 0.1, // Floating upwards slowly
+                    opacity: Math.random() * 0.4 + 0.1
+                });
+            }
+        }
+
+        function handleInput(e) {
+            if (e && isPlaying) e.preventDefault(); 
+            if (!isPlaying) return;
+            
+            player.velocity = jumpPower;
+            // No jump particles, keep it minimal
+        }
+
+        const container = document.getElementById('game-container');
+        container.addEventListener('touchstart', handleInput, { passive: false, capture: true });
+        container.addEventListener('mousedown', handleInput);
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') handleInput();
+        });
+
+        function spawnObstacle() {
+            const minHeight = 60;
+            const maxHeight = canvas.height - gapSize - minHeight;
+            const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+            
+            const obstacleWidth = canvas.width * 0.12 > 50 ? 50 : Math.max(35, canvas.width * 0.12);
+
+            obstacles.push({
+                x: canvas.width,
+                topHeight: topHeight,
+                width: obstacleWidth,
+                passed: false
+            });
+        }
+
+        function checkCollision(obs) {
+            const pLeft = player.x - player.radius + 2; // Slight leniency
+            const pRight = player.x + player.radius - 2;
+            const pTop = player.y - player.radius + 2;
+            const pBottom = player.y + player.radius - 2;
+
+            const oLeft = obs.x;
+            const oRight = obs.x + obs.width;
+            
+            if (pRight > oLeft && pLeft < oRight && pTop < obs.topHeight) return true;
+            if (pRight > oLeft && pLeft < oRight && pBottom > obs.topHeight + gapSize) return true;
+            if (pBottom >= canvas.height || pTop <= 0) return true;
+
+            return false;
+        }
+
+        function createDebris() {
+            for (let i = 0; i < 20; i++) {
+                debris.push({
+                    x: player.x,
+                    y: player.y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    life: 1,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+
+        function drawBackground() {
+            // Linear gradient for a foggy horizon feel
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bgGrad.addColorStop(0, '#262626'); // Dark grey top
+            bgGrad.addColorStop(0.5, '#404040'); // Lighter misty middle
+            bgGrad.addColorStop(1, '#1a1a1a'); // Dark bottom
+
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw floating dust
+            ctx.fillStyle = '#ffffff';
+            dustParticles.forEach(dust => {
+                ctx.globalAlpha = dust.opacity;
+                ctx.beginPath();
+                ctx.arc(dust.x, dust.y, dust.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Update dust position slightly for ambient movement
+                dust.x += dust.vx;
+                dust.y += dust.vy;
+
+                // Wrap dust around screen
+                if (dust.y < 0) dust.y = canvas.height;
+                if (dust.x < 0) dust.x = canvas.width;
+                if (dust.x > canvas.width) dust.x = 0;
+            });
+            ctx.globalAlpha = 1.0; // Reset
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = '#000000'; // Pure black silhouettes
+            
+            obstacles.forEach(obs => {
+                // Top Pillar
+                ctx.fillRect(obs.x, 0, obs.width, obs.topHeight);
+                
+                // Bottom Pillar
+                const bottomY = obs.topHeight + gapSize;
+                const bottomHeight = canvas.height - bottomY;
+                ctx.fillRect(obs.x, bottomY, obs.width, bottomHeight);
+            });
+        }
+
+        function drawPlayer() {
+            if (!isPlaying && player.velocity === 0) return; // Dead
+            
+            // Draw trailing shadow
+            ctx.fillStyle = '#000000';
+            player.history.forEach((pos, index) => {
+                const alpha = (index + 1) / player.history.length;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, player.radius * (alpha), 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            // Draw main player body
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw melancholic glowing eye looking forward
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.9;
+            ctx.beginPath();
+            ctx.arc(player.x + player.radius/2.5, player.y - player.radius/4, player.radius/3.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Subdued eye glow
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = '#ffffff';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawLighting() {
+            // Creates a vignette effect focused around the player, darkening edges
+            const focusX = isPlaying ? player.x + 50 : canvas.width / 2;
+            const focusY = isPlaying ? player.y : canvas.height / 2;
+            
+            const gradient = ctx.createRadialGradient(
+                focusX, focusY, 10, 
+                focusX, focusY, canvas.width * 0.9
+            );
+            
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');     // Clear around player
+            gradient.addColorStop(0.4, 'rgba(0, 0, 0, 0.3)');   // Soft shadow
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.95)');    // Pitch black edges
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function updateDebris() {
+            ctx.fillStyle = '#000000';
+            for (let i = debris.length - 1; i >= 0; i--) {
+                const d = debris[i];
+                d.x += d.vx;
+                d.y += d.vy;
+                d.vy += gravity; // Fall down
+                d.life -= 0.02;
+
+                if (d.life <= 0) {
+                    debris.splice(i, 1);
+                } else {
+                    ctx.globalAlpha = d.life;
+                    ctx.beginPath();
+                    // Draw irregular jagged shards
+                    ctx.moveTo(d.x, d.y);
+                    ctx.lineTo(d.x + d.size, d.y - d.size);
+                    ctx.lineTo(d.x + d.size*1.5, d.y + d.size);
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+            }
+        }
+
+        function update() {
+            if (!isPlaying) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+
+            // Player physics
+            player.velocity += gravity;
+            player.y += player.velocity;
+
+            // Track history for trailing shadow
+            player.history.push({x: player.x, y: player.y});
+            if (player.history.length > 8) player.history.shift();
+
+            // Obstacle logic
+            frameCount++;
+            
+            const adjustedSpawnRate = Math.max(90, Math.floor(130 * (600 / canvas.width)));
+
+            if (frameCount % adjustedSpawnRate === 0) {
+                spawnObstacle();
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.x -= obstacleSpeed;
+
+                if (!obs.passed && obs.x + obs.width < player.x) {
+                    score++;
+                    scoreDisplay.innerText = score;
+                    obs.passed = true;
+                    if(score % 5 === 0) obstacleSpeed += 0.15; // Slow increase
+                }
+
+                if (checkCollision(obs)) gameOver();
+
+                if (obs.x + obs.width < 0) obstacles.splice(i, 1);
+            }
+
+            if (player.y >= canvas.height - player.radius || player.y <= player.radius) {
+                gameOver();
+            }
+
+            // Draw Order: Background -> Obstacles -> Player -> Vignette Lighting
+            drawObstacles();
+            drawPlayer();
+            drawLighting();
+
+            if (isPlaying) {
+                animationId = requestAnimationFrame(update);
+            }
+        }
+
+        function startGame() {
+            isPlaying = true;
+            score = 0;
+            scoreDisplay.innerText = score;
+            frameCount = 0;
+            obstacles = [];
+            debris = [];
+            player.history = [];
+            obstacleSpeed = canvas.width * 0.005; 
+            
+            player.y = canvas.height / 2;
+            player.velocity = 0;
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+
+            initDust();
+            
+            cancelAnimationFrame(animationId);
+            update();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            createDebris();
+            
+            // Final frame rendering
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            drawObstacles();
+            updateDebris();
+            drawLighting();
+            
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('voidOrbitBestScore', bestScore);
+            }
+
+            finalScoreEl.innerText = score;
+            bestScoreEl.innerText = bestScore;
+            
+            // Dramatic pause before showing game over screen
+            setTimeout(() => {
+                gameOverScreen.classList.remove('hidden');
+            }, 800);
+        }
+
+        function handleStart(e) {
+             e.preventDefault();
+             e.stopPropagation();
+             startGame();
+        }
+
+        startBtn.addEventListener('click', handleStart);
+        startBtn.addEventListener('touchend', handleStart);
+        
+        restartBtn.addEventListener('click', handleStart);
+        restartBtn.addEventListener('touchend', handleStart);
+
+        startScreen.addEventListener('click', handleStart);
+        startScreen.addEventListener('touchend', handleStart);
+
+        // Initial setup on load
+        initDust();
+        drawBackground();
+        drawLighting();
+
+    </script>
+</body>
+</html>
