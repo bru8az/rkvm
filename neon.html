@@ -1,0 +1,656 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Descent</title>
+    <style>
+        :root {
+            --bg-dark: #050510;
+            --text-color: #e0f2fe;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ea;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            /* Crucial for mobile to prevent swipe-to-refresh or zooming */
+            touch-action: none; 
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 800px; /* Constrain on desktop */
+            background: var(--bg-dark);
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.1);
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #score-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        #health-bar-container {
+            width: 150px;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--neon-pink);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #health-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+            transition: width 0.2s ease;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 16, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: opacity 0.5s ease;
+            pointer-events: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-blue);
+            text-align: center;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        button {
+            background-color: transparent;
+            color: #fff;
+            border: 2px solid var(--neon-blue);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: var(--font-main);
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3) inset, 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:hover {
+            background-color: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.6) inset, 0 0 25px rgba(0, 243, 255, 0.6);
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-layer">
+            <div class="top-bar">
+                <div id="score-display">000</div>
+                <div id="health-bar-container">
+                    <div id="health-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="screen">
+            <h1>Neon Descent</h1>
+            <p>Tap to deploy shockwaves.<br>Defend the lower grid.</p>
+            <button id="start-btn">Initiate</button>
+        </div>
+
+        <div id="game-over-screen" class="screen hidden">
+            <h1 style="color: #ff00ea; text-shadow: 0 0 20px #ff00ea;">System Failure</h1>
+            <p style="margin-bottom: 10px;">Final Score: <span id="final-score" style="color: #fff;">0</span></p>
+            <p>Best: <span id="best-score" style="color: #fff;">0</span></p>
+            <button id="restart-btn">Reboot System</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d', { alpha: false }); // Optimize for no transparency on base canvas
+        const container = document.getElementById('game-container');
+        
+        const uiElements = {
+            score: document.getElementById('score-display'),
+            health: document.getElementById('health-bar'),
+            startScreen: document.getElementById('start-screen'),
+            gameOverScreen: document.getElementById('game-over-screen'),
+            finalScore: document.getElementById('final-score'),
+            bestScore: document.getElementById('best-score')
+        };
+
+        // Game State
+        let isPlaying = false;
+        let animationId;
+        let score = 0;
+        let health = 100;
+        let bestScore = localStorage.getItem('neonDescentBest') || 0;
+        
+        // Difficulty scaling
+        let spawnRate = 0.02; 
+        let baseSpeed = 2;
+        let difficultyMultiplier = 1;
+
+        // Entities
+        let enemies = [];
+        let shockwaves = [];
+        let particles = [];
+        let stars = [];
+
+        // Colors
+        const colors = ['#00f3ff', '#ff00ea', '#b026ff', '#00ff8c'];
+
+        let audioCtx;
+        let masterGain;
+        let bgOsc1, bgOsc2;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.4;
+                masterGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function startBgMusic() {
+            if (bgOsc1) return;
+            
+            // Low synth drone
+            bgOsc1 = audioCtx.createOscillator();
+            bgOsc1.type = 'sawtooth';
+            bgOsc1.frequency.value = 55; // Low A
+            
+            bgOsc2 = audioCtx.createOscillator();
+            bgOsc2.type = 'square';
+            bgOsc2.frequency.value = 55.5; // Slight detune for thickness
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 200;
+
+            const lfo = audioCtx.createOscillator();
+            lfo.type = 'sine';
+            lfo.frequency.value = 0.2; // Slow sweep
+            const lfoGain = audioCtx.createGain();
+            lfoGain.gain.value = 100;
+            lfo.connect(lfoGain).connect(filter.frequency);
+
+            bgOsc1.connect(filter);
+            bgOsc2.connect(filter);
+            filter.connect(masterGain);
+            
+            bgOsc1.start();
+            bgOsc2.start();
+            lfo.start();
+        }
+
+        function playShockwave() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.4);
+            
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            
+            osc.connect(gain).connect(masterGain);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        function playExplosion() {
+            if (!audioCtx) return;
+            // Short synth chime
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            // Pick a random pleasant frequency based on pentatonic scale
+            const notes = [440, 493.88, 554.37, 659.25, 739.99, 880];
+            osc.type = 'square';
+            osc.frequency.value = notes[Math.floor(Math.random() * notes.length)];
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            
+            osc.connect(filter).connect(gain).connect(masterGain);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        function playDamage() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.5);
+            
+            gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            
+            // Add a bit of distortion/crunch
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowshelf';
+            filter.frequency.value = 200;
+            filter.gain.value = 15;
+
+            osc.connect(filter).connect(gain).connect(masterGain);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+            
+            // Screen shake
+            container.classList.remove('shake');
+            void container.offsetWidth; // trigger reflow
+            container.classList.add('shake');
+        }
+
+        function resize() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            initStars();
+        }
+        window.addEventListener('resize', resize);
+
+        function initStars() {
+            stars = [];
+            const numStars = Math.floor((canvas.width * canvas.height) / 8000);
+            for(let i=0; i<numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5,
+                    speed: Math.random() * 0.5 + 0.1,
+                    alpha: Math.random()
+                });
+            }
+        }
+
+        function triggerShockwave(x, y) {
+            if (!isPlaying) return;
+            
+            // Prevent spamming too many shockwaves
+            if (shockwaves.length > 5) return; 
+
+            shockwaves.push({
+                x: x,
+                y: y,
+                radius: 5,
+                maxRadius: Math.min(canvas.width, canvas.height) * 0.25, // Adapts to screen size
+                growthRate: canvas.width * 0.015,
+                alpha: 1,
+                color: '#fff' // Starts white, fades to neon blue
+            });
+            
+            playShockwave();
+        }
+
+        function handleInput(e) {
+            e.preventDefault(); // Stop scrolling
+            if (!isPlaying) return;
+
+            // Handle both touch and mouse coordinates
+            if (e.type === 'touchstart') {
+                for (let i = 0; i < e.touches.length; i++) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.touches[i].clientX - rect.left;
+                    const y = e.touches[i].clientY - rect.top;
+                    triggerShockwave(x, y);
+                }
+            } else {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                triggerShockwave(x, y);
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('touchstart', handleInput, { passive: false });
+
+        function spawnEnemy() {
+            const size = Math.random() * 10 + 10; // 10 to 20
+            enemies.push({
+                x: Math.random() * (canvas.width - size * 2) + size,
+                y: -size,
+                radius: size,
+                speed: (Math.random() * baseSpeed + baseSpeed) * difficultyMultiplier,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                wobbleOffset: Math.random() * Math.PI * 2, // For slightly erratic movement
+                wobbleSpeed: Math.random() * 0.05
+            });
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1,
+                    color: color,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        function takeDamage(amount) {
+            health -= amount;
+            if (health < 0) health = 0;
+            uiElements.health.style.width = `${health}%`;
+            
+            // Color changing based on health
+            if (health < 30) {
+                uiElements.health.style.background = '#ff0000';
+                uiElements.health.style.boxShadow = '0 0 10px #ff0000';
+            } else {
+                uiElements.health.style.background = 'var(--neon-pink)';
+                uiElements.health.style.boxShadow = '0 0 10px var(--neon-pink)';
+            }
+
+            playDamage();
+
+            if (health === 0) {
+                gameOver();
+            }
+        }
+
+        function update() {
+            if (!isPlaying) return;
+
+            // Update difficulty based on score
+            difficultyMultiplier = 1 + (score / 500);
+            const currentSpawnRate = spawnRate * difficultyMultiplier;
+
+            // 1. Clear background with trail effect
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = 'rgba(5, 5, 16, 0.3)'; // Creates motion blur
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Draw Stars
+            ctx.fillStyle = '#ffffff';
+            stars.forEach(star => {
+                star.y += star.speed * difficultyMultiplier;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+                ctx.globalAlpha = star.alpha;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+            ctx.globalAlpha = 1;
+
+            // Switch to additive blending for neon effects
+            ctx.globalCompositeOperation = 'lighter';
+
+            // 3. Spawn and update enemies
+            if (Math.random() < currentSpawnRate) spawnEnemy();
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                
+                // Erratic movement
+                e.x += Math.sin(Date.now() * e.wobbleSpeed + e.wobbleOffset) * 1.5;
+                e.y += e.speed;
+
+                // Draw enemy (Neon Glow Square/Diamond)
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = e.color;
+                ctx.fillStyle = e.color;
+                
+                ctx.beginPath();
+                ctx.moveTo(e.x, e.y - e.radius);
+                ctx.lineTo(e.x + e.radius, e.y);
+                ctx.lineTo(e.x, e.y + e.radius);
+                ctx.lineTo(e.x - e.radius, e.y);
+                ctx.fill();
+
+                // Check boundary (Hit bottom)
+                if (e.y > canvas.height + e.radius) {
+                    takeDamage(10);
+                    enemies.splice(i, 1);
+                }
+            }
+
+            // 4. Update and draw shockwaves
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                let s = shockwaves[i];
+                s.radius += s.growthRate;
+                s.alpha = 1 - (s.radius / s.maxRadius);
+
+                if (s.alpha <= 0) {
+                    shockwaves.splice(i, 1);
+                    continue;
+                }
+
+                // Draw shockwave
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00f3ff';
+                ctx.strokeStyle = `rgba(0, 243, 255, ${s.alpha})`;
+                ctx.lineWidth = 4;
+                
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Collision detection with enemies
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    let e = enemies[j];
+                    // Simple distance check
+                    let dx = s.x - e.x;
+                    let dy = s.y - e.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+
+                    // If enemy is touching the ring (with some leniency)
+                    if (Math.abs(distance - s.radius) < e.radius + 10) {
+                        createParticles(e.x, e.y, e.color);
+                        enemies.splice(j, 1);
+                        score += 10;
+                        uiElements.score.innerText = score.toString().padStart(3, '0');
+                        playExplosion();
+                    }
+                }
+            }
+
+            // 5. Update and draw particles
+            ctx.shadowBlur = 10;
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.03;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Reset composite and shadow for next frame loop
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+
+            if (isPlaying) {
+                animationId = requestAnimationFrame(update);
+            }
+        }
+
+        function startGame() {
+            initAudio();
+            startBgMusic();
+
+            isPlaying = true;
+            score = 0;
+            health = 100;
+            difficultyMultiplier = 1;
+            enemies = [];
+            shockwaves = [];
+            particles = [];
+            
+            uiElements.score.innerText = "000";
+            uiElements.health.style.width = "100%";
+            uiElements.health.style.background = 'var(--neon-pink)';
+            uiElements.health.style.boxShadow = '0 0 10px var(--neon-pink)';
+
+            uiElements.startScreen.classList.add('hidden');
+            uiElements.gameOverScreen.classList.add('hidden');
+
+            resize();
+            cancelAnimationFrame(animationId);
+            update();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('neonDescentBest', bestScore);
+            }
+
+            uiElements.finalScore.innerText = score;
+            uiElements.bestScore.innerText = bestScore;
+            
+            // Draw a final red overlay
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            setTimeout(() => {
+                uiElements.gameOverScreen.classList.remove('hidden');
+            }, 500);
+        }
+
+        function handleBtnClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startGame();
+        }
+
+        document.getElementById('start-btn').addEventListener('click', handleBtnClick);
+        document.getElementById('start-btn').addEventListener('touchend', handleBtnClick, {passive: false});
+        
+        document.getElementById('restart-btn').addEventListener('click', handleBtnClick);
+        document.getElementById('restart-btn').addEventListener('touchend', handleBtnClick, {passive: false});
+
+        // Initialize background on load
+        resize();
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+    </script>
+</body>
+</html>
