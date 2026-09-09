@@ -1,0 +1,717 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wasteland Wings</title>
+    <style>
+        :root {
+            --rust: #a33b20;
+            --dust: #d28c55;
+            --dark-metal: #2a2826;
+            --sky: #8a3b12;
+            --text-color: #f0d8c0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            background-color: #000;
+            color: var(--text-color);
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Overlay UI */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(42, 40, 38, 0.85);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: var(--dust);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0px var(--rust), 4px 4px 0px #000;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p {
+            font-family: sans-serif;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: #ccc;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        button.menu-btn {
+            background: var(--rust);
+            color: var(--text-color);
+            border: 3px solid #000;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'Impact', sans-serif;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px #000;
+            pointer-events: auto;
+        }
+
+        button.menu-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            color: var(--dust);
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* D-Pad Controls */
+        #d-pad {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: grid;
+            grid-template-columns: 60px 60px 60px;
+            grid-template-rows: 60px 60px 60px;
+            gap: 10px;
+            pointer-events: auto;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        #d-pad.hidden {
+            display: none;
+        }
+
+        #d-pad:active {
+            opacity: 1;
+        }
+
+        .dir-btn {
+            background: rgba(163, 59, 32, 0.8);
+            border: 2px solid var(--text-color);
+            border-radius: 10px;
+            color: var(--text-color);
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 0px #000;
+        }
+
+        .dir-btn:active, .dir-btn.pressed {
+            transform: translateY(4px);
+            box-shadow: 0px 0px 0px #000;
+            background: rgba(210, 140, 85, 0.9);
+        }
+
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 3; }
+
+        /* Screen flash effect */
+        #flash {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hud">DISTANCE: <span id="score">0</span>m</div>
+    <div id="flash"></div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div id="start-screen" class="screen active">
+            <h1>Wasteland<br>Wings</h1>
+            <p>Use the arrows to navigate your mechanical bird. Dodge the incoming scrap drones.</p>
+            <button id="start-btn" class="menu-btn">Take Flight</button>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <h1>Shot Down</h1>
+            <p>Distance covered: <span id="final-score">0</span>m</p>
+            <button id="restart-btn" class="menu-btn">Rebuild</button>
+        </div>
+
+        <!-- On-Screen Controls -->
+        <div id="d-pad" class="hidden">
+            <div class="dir-btn" id="btn-up">▲</div>
+            <div class="dir-btn" id="btn-left">◀</div>
+            <div class="dir-btn" id="btn-right">▶</div>
+            <div class="dir-btn" id="btn-down">▼</div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Procedural Audio System
+         */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const Synth = {
+            masterGain: audioCtx.createGain(),
+            
+            init() {
+                this.masterGain.gain.value = 0.5;
+                this.masterGain.connect(audioCtx.destination);
+            },
+
+            createNoiseBuffer() {
+                const bufferSize = audioCtx.sampleRate * 1;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                return buffer;
+            },
+
+            playFlap() {
+                // Mechanical servo/flap sound
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
+                
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            },
+
+            playCrash() {
+                // Harsh explosion sound
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = this.createNoiseBuffer();
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.masterGain);
+                
+                noise.start();
+                noise.stop(audioCtx.currentTime + 0.5);
+            }
+        };
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const finalScoreEl = document.getElementById('final-score');
+        const flashEl = document.getElementById('flash');
+        const dPad = document.getElementById('d-pad');
+        
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Input state
+        const keys = { up: false, down: false, left: false, right: false };
+        
+        // Game State
+        let state = 'START';
+        let lastTime = 0;
+        let animationId;
+        let distance = 0;
+        let gameSpeed = 300; // Pixels per second
+
+        let player;
+        let enemies = [];
+        let particles = [];
+        let bgLayers = [];
+
+        class Player {
+            constructor() {
+                this.x = width * 0.2;
+                this.y = height / 2;
+                this.vx = 0;
+                this.vy = 0;
+                this.size = 20;
+                this.speed = 180; // Decreased acceleration to prevent moving too fast
+                this.friction = 0.8; // Decreased friction multiplier so the bird stops faster
+                this.wingAngle = 0;
+                this.flapTimer = 0;
+            }
+
+            update(dt) {
+                // Apply input
+                if (keys.up) this.vy -= this.speed * dt;
+                if (keys.down) this.vy += this.speed * dt;
+                if (keys.left) this.vx -= this.speed * dt;
+                if (keys.right) this.vx += this.speed * dt;
+
+                // Apply friction
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+
+                // Move
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounds checking
+                this.x = Math.max(this.size, Math.min(width - this.size, this.x));
+                this.y = Math.max(this.size, Math.min(height - this.size, this.y));
+
+                // Flapping animation logic
+                if (Math.abs(this.vy) > 0.5 || Math.abs(this.vx) > 0.5) {
+                    this.flapTimer += dt * 15;
+                    if (this.flapTimer > Math.PI * 2) {
+                        this.flapTimer = 0;
+                        Synth.playFlap(); // Play sound per flap cycle
+                    }
+                }
+                this.wingAngle = Math.sin(this.flapTimer) * 0.8;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Tilt based on movement
+                ctx.rotate(this.vy * 0.05);
+
+                // Draw mechanical bird (Triangle body)
+                ctx.fillStyle = '#a33b20'; // Rust color
+                ctx.beginPath();
+                ctx.moveTo(this.size, 0); // Beak
+                ctx.lineTo(-this.size, -this.size * 0.5); // Top tail
+                ctx.lineTo(-this.size, this.size * 0.5); // Bottom tail
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = '#f0d8c0';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw Wings
+                ctx.fillStyle = '#2a2826';
+                
+                // Far Wing
+                ctx.save();
+                ctx.rotate(-this.wingAngle);
+                ctx.beginPath();
+                ctx.moveTo(-5, 0);
+                ctx.lineTo(5, -this.size * 1.5);
+                ctx.lineTo(10, 0);
+                ctx.fill();
+                ctx.restore();
+
+                // Near Wing
+                ctx.save();
+                ctx.rotate(this.wingAngle);
+                ctx.beginPath();
+                ctx.moveTo(-5, 0);
+                ctx.lineTo(5, this.size * 1.5);
+                ctx.lineTo(10, 0);
+                ctx.fill();
+                ctx.restore();
+
+                // Eye
+                ctx.fillStyle = '#ffaa00';
+                ctx.beginPath();
+                ctx.arc(this.size * 0.4, -this.size * 0.1, 3, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        class Enemy {
+            constructor() {
+                this.x = width + 50;
+                this.y = Math.random() * (height - 100) + 50;
+                this.size = 15 + Math.random() * 15;
+                // Move relative to game speed plus some random variance
+                this.vx = -(gameSpeed * 0.8 + Math.random() * gameSpeed * 0.5);
+                this.vy = (Math.random() - 0.5) * 50; // Slight drift
+                this.rotation = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 5;
+            }
+
+            update(dt) {
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                this.rotation += this.rotSpeed * dt;
+                
+                // Bounce off top/bottom
+                if (this.y < this.size || this.y > height - this.size) {
+                    this.vy *= -1;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Draw rusty drone / buzzard
+                ctx.fillStyle = '#4a4a4a';
+                ctx.beginPath();
+                // Spiky gear/mine shape
+                for(let i=0; i<8; i++) {
+                    let angle = (i / 8) * Math.PI * 2;
+                    let rad = i % 2 === 0 ? this.size : this.size * 0.4;
+                    ctx.lineTo(Math.cos(angle) * rad, Math.sin(angle) * rad);
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = '#a33b20';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size * 0.2, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 200 + 50;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.5 + 0.5;
+                this.size = Math.random() * 5 + 2;
+                this.color = Math.random() > 0.5 ? '#a33b20' : '#ffaa00';
+            }
+            update(dt) {
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                this.life -= this.decay * dt;
+            }
+            draw() {
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        class ParallaxLayer {
+            constructor(speedMultiplier, color, offset) {
+                this.x = 0;
+                this.speedMultiplier = speedMultiplier;
+                this.color = color;
+                this.offset = offset;
+                // Generate a jagged terrain profile
+                this.points = [];
+                for(let i = 0; i <= 20; i++) {
+                    this.points.push(Math.random() * 100);
+                }
+            }
+            update(dt) {
+                this.x -= gameSpeed * this.speedMultiplier * dt;
+                if (this.x <= -width) {
+                    this.x += width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                
+                // Draw twice to seamlessly loop
+                for (let j = 0; j < 2; j++) {
+                    let startX = this.x + (j * width);
+                    ctx.beginPath();
+                    ctx.moveTo(startX, height);
+                    
+                    let step = width / 20;
+                    for(let i = 0; i <= 20; i++) {
+                        // Create peaks originating from the bottom
+                        let px = startX + (i * step);
+                        let py = height - this.offset - this.points[i];
+                        ctx.lineTo(px, py);
+                    }
+                    
+                    ctx.lineTo(startX + width, height);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+
+        function initGame() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            Synth.init();
+
+            player = new Player();
+            enemies = [];
+            particles = [];
+            distance = 0;
+            gameSpeed = 300;
+
+            // Setup Parallax Background
+            bgLayers = [
+                new ParallaxLayer(0.2, '#5a2b12', 200), // Back mountains
+                new ParallaxLayer(0.5, '#3a1b0a', 100), // Mid ruins
+                new ParallaxLayer(1.0, '#1a0b02', 0)    // Foreground ground
+            ];
+
+            state = 'PLAYING';
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-over-screen').classList.remove('active');
+            dPad.classList.remove('hidden');
+            scoreEl.innerText = '0';
+            
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            state = 'GAMEOVER';
+            Synth.playCrash();
+            
+            // Spawn explosion particles
+            for(let i=0; i<30; i++) {
+                particles.push(new Particle(player.x, player.y));
+            }
+
+            // Screen flash
+            flashEl.style.opacity = 1;
+            setTimeout(() => { flashEl.style.opacity = 0; }, 100);
+
+            // Update UI
+            finalScoreEl.innerText = Math.floor(distance);
+            document.getElementById('game-over-screen').classList.add('active');
+            dPad.classList.add('hidden');
+            
+            // Reset keys so bird doesn't fly off on restart
+            keys.up = keys.down = keys.left = keys.right = false;
+        }
+
+        function update(dt) {
+            distance += (gameSpeed / 100) * dt;
+            scoreEl.innerText = Math.floor(distance);
+            gameSpeed += 5 * dt; // Slowly increase difficulty
+
+            bgLayers.forEach(layer => layer.update(dt));
+            player.update(dt);
+
+            // Spawn Enemies
+            // Chance to spawn increases with game speed
+            if (Math.random() < 0.02 * (gameSpeed / 300)) {
+                enemies.push(new Enemy());
+            }
+
+            // Update Enemies & Collision
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                e.update(dt);
+
+                // Collision detection (Circle overlap)
+                // Use slightly smaller hitboxes for fairness
+                let dx = player.x - e.x;
+                let dy = player.y - e.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < (player.size * 0.8) + (e.size * 0.8)) {
+                    gameOver();
+                }
+
+                // Remove off-screen enemies
+                if (e.x < -e.size) {
+                    enemies.splice(i, 1);
+                }
+            }
+
+            // Update Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update(dt);
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function draw() {
+            // Sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+            skyGrad.addColorStop(0, '#8a3b12'); // Rusty orange
+            skyGrad.addColorStop(1, '#d28c55'); // Dusty yellow
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Smog layer
+            ctx.fillStyle = 'rgba(255, 220, 150, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            bgLayers.forEach(layer => layer.draw());
+            
+            if (state === 'PLAYING') {
+                player.draw();
+            }
+            
+            enemies.forEach(e => e.draw());
+            particles.forEach(p => p.draw());
+        }
+
+        function gameLoop(timestamp) {
+            let dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            if (dt > 0.1) dt = 0.1; // Cap dt
+
+            if (state === 'PLAYING') {
+                update(dt);
+            } else if (state === 'GAMEOVER') {
+                // Keep updating particles and moving background slightly for game over scene
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update(dt);
+                    if (particles[i].life <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+            }
+            
+            draw();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // UI Buttons
+        document.getElementById('start-btn').addEventListener('click', initGame);
+        document.getElementById('restart-btn').addEventListener('click', initGame);
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'w') keys.up = true;
+            if (e.key === 'ArrowDown' || e.key === 's') keys.down = true;
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'w') keys.up = false;
+            if (e.key === 'ArrowDown' || e.key === 's') keys.down = false;
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+        });
+
+        // Touch Controls mapping
+        const dirBtns = {
+            'btn-up': 'up',
+            'btn-down': 'down',
+            'btn-left': 'left',
+            'btn-right': 'right'
+        };
+
+        for (let [id, keyName] of Object.entries(dirBtns)) {
+            let btn = document.getElementById(id);
+            
+            // Handle touch start/end
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[keyName] = true;
+                btn.classList.add('pressed');
+            }, {passive: false});
+            
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[keyName] = false;
+                btn.classList.remove('pressed');
+            }, {passive: false});
+
+            // Handle mouse fallbacks for testing D-pad on desktop
+            btn.addEventListener('mousedown', (e) => {
+                keys[keyName] = true;
+                btn.classList.add('pressed');
+            });
+            btn.addEventListener('mouseup', (e) => {
+                keys[keyName] = false;
+                btn.classList.remove('pressed');
+            });
+            btn.addEventListener('mouseleave', (e) => {
+                keys[keyName] = false;
+                btn.classList.remove('pressed');
+            });
+        }
+
+        // Draw initial background before game starts
+        resize();
+        bgLayers = [
+            new ParallaxLayer(0.2, '#5a2b12', 200),
+            new ParallaxLayer(0.5, '#3a1b0a', 100),
+            new ParallaxLayer(1.0, '#1a0b02', 0)
+        ];
+        draw();
+
+    </script>
+</body>
+</html>
